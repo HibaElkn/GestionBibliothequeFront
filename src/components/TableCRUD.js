@@ -10,12 +10,14 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
     const [itemsPerPage] = useState(7);
     const [selectedItems, setSelectedItems] = useState([]);
     const [showAddUserPopup, setShowAddUserPopup] = useState(false);
+    const [showEditUserPopup, setShowEditUserPopup] = useState(false);
     const [showImportPopup, setShowImportPopup] = useState(false);
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [isBulkDelete, setIsBulkDelete] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
     const [newUser, setNewUser] = useState({ massarOrSum: '', firstName: '', lastName: '', email: '' });
+    const [editUser, setEditUser] = useState({ id: null, massarOrSum: '', firstName: '', lastName: '', email: '' });
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -44,6 +46,10 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
         setNewUser({ ...newUser, [e.target.name]: e.target.value });
     };
 
+    const handleEditUserChange = (e) => {
+        setEditUser({ ...editUser, [e.target.name]: e.target.value });
+    };
+
     const handleDeleteConfirmation = (id) => {
         setIsBulkDelete(false);
         setItemToDelete(id);
@@ -63,6 +69,11 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
             onDelete(itemToDelete);
         }
         setShowDeletePopup(false);
+    };
+
+    const openEditPopup = (user) => {
+        setEditUser(user);
+        setShowEditUserPopup(true);
     };
 
     return (
@@ -115,7 +126,7 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
                                 <td>{item.lastName}</td>
                                 <td>{item.email}</td>
                                 <td>
-                                    <button className="edit btn btn-sm me-2" style={{ color: 'blue' }} onClick={() => onEdit(item)}>
+                                    <button className="edit btn btn-sm me-2" style={{ color: 'blue' }} onClick={() => openEditPopup(item)}>
                                         <i className="fas fa-pen"></i>
                                     </button>
                                     <button className="delete btn btn-sm" style={{ color: 'red' }} onClick={() => handleDeleteConfirmation(item.id)}>
@@ -158,8 +169,22 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
                         <input type="text" name="firstName" placeholder="Prénom" onChange={handleAddUserChange} />
                         <input type="text" name="lastName" placeholder="Nom" onChange={handleAddUserChange} />
                         <input type="email" name="email" placeholder="Email" onChange={handleAddUserChange} />
-                        <button className="btn btn-primary mt-2">Ajouter l'utilisateur</button>
+                        <button className="btn btn-primary mt-2" onClick={() => { onAdd(newUser); setShowAddUserPopup(false); }}>Ajouter l'utilisateur</button>
                         <button className="btn btn-secondary mt-2" onClick={() => setShowAddUserPopup(false)}>Annuler</button>
+                    </div>
+                </div>
+            )}
+
+            {showEditUserPopup && (
+                <div className="popup">
+                    <div className="popup-content">
+                        <h5>Modifier l'utilisateur</h5>
+                        <input type="text" name="massarOrSum" value={editUser.massarOrSum} placeholder={firstColumnName} onChange={handleEditUserChange} />
+                        <input type="text" name="firstName" value={editUser.firstName} placeholder="Prénom" onChange={handleEditUserChange} />
+                        <input type="text" name="lastName" value={editUser.lastName} placeholder="Nom" onChange={handleEditUserChange} />
+                        <input type="email" name="email" value={editUser.email} placeholder="Email" onChange={handleEditUserChange} />
+                        <button className="btn btn-primary mt-2" onClick={() => { onEdit(editUser); setShowEditUserPopup(false); }}>Enregistrer les modifications</button>
+                        <button className="btn btn-secondary mt-2" onClick={() => setShowEditUserPopup(false)}>Annuler</button>
                     </div>
                 </div>
             )}
@@ -179,7 +204,7 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
                 <div className="popup">
                     <div className="popup-content">
                         <h5>Confirmer la suppression</h5>
-                        <p>Voulez-vous vraiment supprimer {isBulkDelete ? 'les utilisateurs sélectionnés ?' : 'cet utilisateur ?'}</p>
+                        <p>Êtes-vous sûr de vouloir supprimer {isBulkDelete ? 'les utilisateurs sélectionnés' : 'cet utilisateur'} ?</p>
                         <button className="btn btn-primary2 mt-2" onClick={confirmDelete}>Confirmer</button>
                         <button className="btn btn-secondary mt-2" onClick={() => setShowDeletePopup(false)}>Annuler</button>
                     </div>
