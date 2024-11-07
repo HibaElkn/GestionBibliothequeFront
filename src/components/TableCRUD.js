@@ -1,11 +1,11 @@
 // File: C:\Users\hnebm\Desktop\gestion-bibliotheque-front\src\components\TableCRUD.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../styles/UserManagement.css';
 
-const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, onAdd }) => {
+const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onDeleteSelected, onAdd, onImport }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
     const [selectedItems, setSelectedItems] = useState([]);
@@ -15,9 +15,13 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [isBulkDelete, setIsBulkDelete] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [errors, setErrors] = useState({});  // Assurez-vous que cette ligne est présente
+    const [selectedFile, setSelectedFile] = useState(null);  // État pour le fichier sélectionné
 
-    const [newUser, setNewUser] = useState({ massarOrSum: '', firstName: '', lastName: '', email: '' });
-    const [editUser, setEditUser] = useState({ id: null, massarOrSum: '', firstName: '', lastName: '', email: '' });
+
+
+    const [newUser, setNewUser] = useState({ code: '', prenom: '', nom: '', email: '' });
+    const [editUser, setEditUser] = useState({ id: null, code: '', prenom: '', nom: '', email: '' });
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -33,6 +37,33 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
         }
     };
 
+    const handleFileChange = (e) => {
+        setSelectedFile(e.target.files[0]);
+    };
+    
+    const handleImport = () => {
+        if (selectedFile) {
+            onImport(selectedFile); // Appelle la fonction onImport passée en prop
+            setShowImportPopup(false);
+            setSelectedFile(null);
+        }
+    };
+
+    
+    const validateForm = () => {
+        let formErrors = {};
+        if (!newUser.code) formErrors.code = 'Ce champ est requis';
+        if (!newUser.prenom) formErrors.prenom = 'Ce champ est requis';
+        if (!newUser.nom) formErrors.nom = 'Ce champ est requis';
+        if (!newUser.email) {
+            formErrors.email = 'Ce champ est requis';
+        } else if (!newUser.email.endsWith('@uhp.ac.ma')) {
+            formErrors.email = "L'email doit se terminer par '@uhp.ac.ma'";
+        }
+        setErrors(formErrors);
+        return Object.keys(formErrors).length === 0;
+    };
+
     const handleSelectItem = (id) => {
         setSelectedItems(selectedItems.includes(id)
             ? selectedItems.filter(itemId => itemId !== id)
@@ -44,7 +75,17 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
 
     const handleAddUserChange = (e) => {
         setNewUser({ ...newUser, [e.target.name]: e.target.value });
+    }
+
+    const handleAddUser = () => {
+        if (validateForm()) {
+            onAdd(newUser);
+            setShowAddUserPopup(false);
+            setNewUser({ code: '', prenom: '', nom: '', email: '' });
+            setErrors({});
+        }
     };
+
 
     const handleEditUserChange = (e) => {
         setEditUser({ ...editUser, [e.target.name]: e.target.value });
@@ -121,9 +162,9 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
                                         <label></label>
                                     </span>
                                 </td>
-                                <td>{item[firstColumnName.toLowerCase()]}</td>
-                                <td>{item.firstName}</td>
-                                <td>{item.lastName}</td>
+                                <td>{item[firstColumnKey]}</td>
+                                <td>{item.prenom}</td>
+                                <td>{item.nom}</td>
                                 <td>{item.email}</td>
                                 <td>
                                     <button className="edit btn btn-sm me-2" style={{ color: 'blue' }} onClick={() => openEditPopup(item)}>
@@ -165,23 +206,54 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
                 <div className="popup">
                     <div className="popup-content">
                         <h5>Ajouter un utilisateur</h5>
-                        <input type="text" name="massarOrSum" placeholder={firstColumnName} onChange={handleAddUserChange} />
-                        <input type="text" name="firstName" placeholder="Prénom" onChange={handleAddUserChange} />
-                        <input type="text" name="lastName" placeholder="Nom" onChange={handleAddUserChange} />
-                        <input type="email" name="email" placeholder="Email" onChange={handleAddUserChange} />
-                        <button className="btn btn-primary mt-2" onClick={() => { onAdd(newUser); setShowAddUserPopup(false); }}>Ajouter l'utilisateur</button>
+                        <input
+                            type="text"
+                            name="code"
+                            placeholder={firstColumnName}
+                            onChange={handleAddUserChange}
+                            value={newUser.code}
+                        />
+                        {errors.code && <div className="error-message">{errors.code}</div>}
+
+                        <input
+                            type="text"
+                            name="prenom"
+                            placeholder="Prénom"
+                            onChange={handleAddUserChange}
+                            value={newUser.prenom}
+                        />
+                        {errors.prenom && <div className="error-message">{errors.prenom}</div>}
+
+                        <input
+                            type="text"
+                            name="nom"
+                            placeholder="Nom"
+                            onChange={handleAddUserChange}
+                            value={newUser.nom}
+                        />
+                        {errors.nom && <div className="error-message">{errors.nom}</div>}
+
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            onChange={handleAddUserChange}
+                            value={newUser.email}
+                        />
+                        {errors.email && <div className="error-message">{errors.email}</div>}
+
+                        <button className="btn btn-primary mt-2" onClick={handleAddUser}>Ajouter l'utilisateur</button>
                         <button className="btn btn-secondary mt-2" onClick={() => setShowAddUserPopup(false)}>Annuler</button>
                     </div>
                 </div>
             )}
-
             {showEditUserPopup && (
                 <div className="popup">
                     <div className="popup-content">
                         <h5>Modifier l'utilisateur</h5>
-                        <input type="text" name="massarOrSum" value={editUser.massarOrSum} placeholder={firstColumnName} onChange={handleEditUserChange} />
-                        <input type="text" name="firstName" value={editUser.firstName} placeholder="Prénom" onChange={handleEditUserChange} />
-                        <input type="text" name="lastName" value={editUser.lastName} placeholder="Nom" onChange={handleEditUserChange} />
+                        <input type="text" name={firstColumnKey} value={editUser[firstColumnKey]} placeholder={firstColumnName} onChange={handleEditUserChange} />
+                        <input type="text" name="prenom" value={editUser.prenom} placeholder="Prénom" onChange={handleEditUserChange} />
+                        <input type="text" name="nom" value={editUser.nom} placeholder="Nom" onChange={handleEditUserChange} />
                         <input type="email" name="email" value={editUser.email} placeholder="Email" onChange={handleEditUserChange} />
                         <button className="btn btn-primary mt-2" onClick={() => { onEdit(editUser); setShowEditUserPopup(false); }}>Enregistrer les modifications</button>
                         <button className="btn btn-secondary mt-2" onClick={() => setShowEditUserPopup(false)}>Annuler</button>
@@ -189,13 +261,28 @@ const TableCRUD = ({ data, firstColumnName, onEdit, onDelete, onDeleteSelected, 
                 </div>
             )}
 
-            {showImportPopup && (
+{showImportPopup && (
                 <div className="popup">
                     <div className="popup-content">
                         <h5>Importer tous les utilisateurs</h5>
-                        <input type="file" className="form-control" />
-                        <button className="btn btn-primary mt-2">Importer</button>
-                        <button className="btn btn-secondary mt-2" onClick={() => setShowImportPopup(false)}>Annuler</button>
+                        <input
+                            type="file"
+                            className="form-control"
+                            accept=".xls, .xlsx"
+                            onChange={handleFileChange}
+                        />
+                        <button className="btn btn-primary mt-2" onClick={handleImport}>
+                            Importer
+                        </button>
+                        <button
+                            className="btn btn-secondary mt-2"
+                            onClick={() => {
+                                setShowImportPopup(false);
+                                setSelectedFile(null);
+                            }}
+                        >
+                            Annuler
+                        </button>
                     </div>
                 </div>
             )}

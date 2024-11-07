@@ -153,3 +153,10 @@ table.table-striped.table-hover tbody tr:hover {
     outline: none;
     box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.4); /* Ombre rouge légère autour du bouton */
 }
+
+
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
