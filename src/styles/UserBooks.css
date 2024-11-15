@@ -1,0 +1,140 @@
+/* styles/UserBooks.css */
+
+/* Style pour la section des livres */
+.books-section .card {
+    border: 1px solid #004080; /* Bordure bleu foncé */
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #f0f8ff; /* Fond bleu clair pour chaque carte */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Assure que les éléments sont bien espacés */
+}
+
+/* Effet au survol de la carte */
+.books-section .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Style pour l'image de couverture du livre */
+.books-section .card img {
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+/* Style pour le titre du livre */
+.books-section .card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #004080; /* Texte bleu pour le titre */
+}
+
+/* Style pour le corps de la carte */
+.books-section .card-body {
+    color: #004080; /* Texte bleu foncé */
+}
+
+/* Style pour le texte de la carte */
+.books-section .card-text {
+    color: #004080; /* Bleu foncé pour le texte */
+}
+
+/* Conteneur pour les boutons */
+.books-section .card-footer {
+    display: flex;
+    justify-content: space-between; /* Espacement entre les boutons */
+    align-items: center;
+    margin-top: auto; /* Pour positionner les boutons au bas de la carte */
+    padding: 10px;
+}
+
+/* Style pour le bouton "Voir plus" */
+.btn-see {
+    background-color: #004080; 
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Ajout d'une marge à droite pour éloigner le bouton "Voir plus" du bouton "Emprunter" */
+.btn-see {
+    margin-right: auto;
+}
+
+.btn-see:hover {
+    background-color: #003060; 
+    transform: scale(1.05);
+}
+
+.btn-see:active {
+    background-color: #002050;
+    transform: scale(1);
+}
+
+/* Style pour le bouton "Emprunter" */
+.btn-success {
+    background-color: #004080; 
+    border: none;
+    font-weight: bold;
+    color: #fff;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-success:hover {
+    background-color: #003060; 
+    transform: scale(1.05);
+}
+
+.btn-success:active {
+    background-color: #002050;
+    transform: scale(1);
+}
+
+/* Style spécifique pour le bouton d'envoi de demande */
+.btn-primary {
+    background-color: #004080; 
+    border: none;
+    font-weight: bold;
+    color: #fff;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #003060;
+    transform: scale(1.05);
+}
+
+.btn-primary:active {
+    background-color: #002050;
+    transform: scale(1);
+}
+
+/* Style pour les messages d'alerte de succès */
+.alert-success {
+    background-color: #d4edda; /* Vert clair pour succès */
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-success i {
+    color: #28a745; /* Vert pour l'icône de succès */
+}
+
+/* Style pour les boutons spécifiques dans les modales */
+.modal-footer .btn {
+    background-color: #004080; /* Bleu foncé */
+    border: none;
+    color: #fff;
+}
+
+.modal-footer .btn:hover {
+    background-color: #003060;
+}
+
+.modal-footer .btn:active {
+    background-color: #002050;
+}

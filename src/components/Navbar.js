@@ -28,13 +28,22 @@ const Navbar = () => {
           <span>Gestion des administrateurs</span>
         </Link>
         <Link to="/gestion-bibliothecaires" className="nav-button nav-button-management">
-          <i className="fas fa-book"></i> {/* Icon for librarian management */}
+          <i className="fas fa-id-card-alt"></i> {/* Icon for librarian management */}
           <span>Gestion des bibliothécaires</span>
         </Link>
         <hr />
         <Link to="/gestion-livre" className="nav-button nav-button-management">
-          <i className="fas fa-book"></i>
+          <i className="fas fa-book-open"></i>
           <span>Gestion des livres</span>
+        </Link>
+        <Link to="/gestion-emprunts" className="nav-button nav-button-management">
+          <i className="fas fa-book-reader"></i> {/* Icône pour la gestion des emprunts */}
+          <span>Gestion des emprunts</span>
+        </Link>
+        {/* Nouvelle section pour la gestion des réservations */}
+        <Link to="/gestion-reservations" className="nav-button nav-button-management">
+          <i className="fas fa-calendar-check"></i> {/* Icône pour la gestion des réservations */}
+          <span>Gestion des réservations</span>
         </Link>
         <hr />
         <Link to="/dashboard" className="nav-button nav-button-management">
@@ -48,7 +57,6 @@ const Navbar = () => {
 
       <input id="nav-footer-toggle" type="checkbox" />
       <div id="nav-footer">
-        
         <Link to="/logout" className="nav-button">
           <i className="fas fa-sign-out-alt"></i>
           <span>Déconnexion</span>
