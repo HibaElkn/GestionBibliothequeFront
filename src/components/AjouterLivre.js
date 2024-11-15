@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import bookService from '../services/livreService.js';
+import documentService from '../services/documentService.js';
 import '../styles/AjouterLivre.css';
 
 const AjouterLivre = () => {
     const [livre, setLivre] = useState({
         titre: '',
         auteur: '',
-        soustitre: '', // Gardez le nom 'soustitre' ici
+        soustitre: '',
         edition: '',
         cote1: '',
         cote2: '',
         descripteurs: '',
+        statut: 'EXIST',  // Default statut value as expected by the backend
+        img: '',          // Default empty img value
     });
 
     const navigate = useNavigate();
@@ -23,19 +25,30 @@ const AjouterLivre = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Conversion des descripteurs en tableau
+    
+        // Prepare the data to be sent in the request
         const livreAvecDescripteurs = {
-            ...livre,
+            titre: livre.titre,
+            auteurs: livre.auteur.split(',').map(a => a.trim()).filter(Boolean),  // Convert auteur to array for auteurs
+            sousTitre: livre.soustitre,  // Rename soustitre to sousTitre
+            edition: livre.edition,
+            cote1: livre.cote1,
+            cote2: livre.cote2,
             descripteurs: livre.descripteurs.split(',').map(d => d.trim()).filter(Boolean),
+            statut: livre.statut,
+            img: livre.img,
         };
-
-        // Envoi à bookService avec le bon nom de propriété
-        await bookService.addLivre({
-            ...livreAvecDescripteurs,
-            soustitre: livreAvecDescripteurs.soustitre // Assurez-vous d'envoyer 'soustitre'
-        });
-        navigate('/gestion-livre');
+    
+        // Log the data being sent to ensure it's correctly formatted
+        console.log("Data being sent to backend:", livreAvecDescripteurs);
+    
+        try {
+            // Send the formatted data to the backend
+            await documentService.saveDocument(livreAvecDescripteurs);
+            navigate('/gestion-livre');
+        } catch (error) {
+            console.error("Error adding the book:", error);
+        }
     };
 
     const handleCancel = () => {
@@ -51,12 +64,12 @@ const AjouterLivre = () => {
                     <input type="text" name="titre" value={livre.titre} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label>Auteur:</label>
+                    <label>Auteur (séparés par des virgules si plusieurs):</label>
                     <input type="text" name="auteur" value={livre.auteur} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
                     <label>Sous-titre:</label>
-                    <input type="text" name="soustitre" value={livre.soustitre} onChange={handleChange} /> {/* Correspond au champ soustitre */}
+                    <input type="text" name="soustitre" value={livre.soustitre} onChange={handleChange} />
                 </div>
                 <div className="form-group">
                     <label>Édition:</label>
@@ -70,7 +83,6 @@ const AjouterLivre = () => {
                     <label>Cote 2:</label>
                     <input type="text" name="cote2" value={livre.cote2} onChange={handleChange} required />
                 </div>
-
                 <div className="form-group">
                     <label>Descripteurs (séparés par des virgules):</label>
                     <input type="text" name="descripteurs" value={livre.descripteurs} onChange={handleChange} />

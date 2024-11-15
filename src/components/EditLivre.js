@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getLivres, updateLivre } from '../utils/LocalStorage';
+import documentService from '../services/documentService'; // Assuming you've imported the service
 import '../styles/EditLivre.css';
 
 const EditLivre = () => {
@@ -19,13 +19,15 @@ const EditLivre = () => {
   const [confirmationVisible, setConfirmationVisible] = useState(false); // État pour gérer la boîte de confirmation
 
   useEffect(() => {
-    const livres = getLivres();
-    const livreTrouve = livres.find(l => l.id === id);
-    if (livreTrouve) {
-        setLivre(livreTrouve);
-    } else {
+    const fetchLivre = async () => {
+      try {
+        const response = await documentService.getDocumentById(id);
+        setLivre(response);
+      } catch (error) {
         setErreur('Livre non trouvé');
-    }
+      }
+    };
+    fetchLivre();
   }, [id]);
 
   const handleChange = (e) => {
@@ -33,11 +35,41 @@ const EditLivre = () => {
     setLivre({ ...livre, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    updateLivre(livre);
-    setConfirmationVisible(true); // Afficher la boîte de confirmation
+    try {
+      // Validate that fields are not empty
+      if (!livre.auteur || !livre.titre) {
+        setErreur("L'auteur et le titre sont obligatoires.");
+        return;
+      }
+      
+      // Log for debugging
+      console.log('Auteur:', livre.auteur);
+      console.log('Titre:', livre.titre);
+      
+      const documentData = {
+        auteurs: [livre.auteur],  // Ensure it is an array
+        titre: livre.titre,
+        sousTitre: livre.soustitre,
+        edition: livre.edition,
+        cote1: livre.cote1,
+        cote2: livre.cote2,
+        descripteurs: livre.descripteurs.split(',').map(d => d.trim()), // Assuming descripteurs is a comma-separated string
+        statut: "EXIST", 
+        img: "base64EncodedImageHere" // Dynamic image if needed
+      };
+      
+      console.log('Document Data:', documentData);  // Log the document data again for confirmation
+      
+      await documentService.updateDocument(id, documentData);
+      setConfirmationVisible(true);
+    } catch (error) {
+      setErreur('Une erreur est survenue lors de la mise à jour');
+      console.error('Error updating document:', error);
+    }
   };
+  
 
   const handleCancel = () => {
     navigate('/livres'); // Rediriger vers la page des livres
@@ -45,8 +77,8 @@ const EditLivre = () => {
 
   const handleConfirmationClose = () => {
     setConfirmationVisible(false);
-    navigate('/livres');
-  };
+    navigate('/gestion-livre'); // Redirect to the desired route after confirmation
+};
 
   return (
     <div className="modifier-livre-container">
@@ -121,18 +153,17 @@ const EditLivre = () => {
         </div>
         <div className="button-container">
           <button type="submit" className="btn-success">Mettre à jour</button>
-          <button  onClick={() => navigate('/gestion-livre')} className="btn-cancel">Annuler</button>
+          <button type="button" onClick={handleCancel} className="btn-cancel">Annuler</button>
         </div>
       </form>
 
       {confirmationVisible && (
         <div className="confirmation-overlay">
-        <div className="confirmation-box">
-          <p>Le livre a été mis à jour avec succès !</p>
-          <button onClick={() => navigate('/gestion-livre')} className="btn-confirm">OK</button>
+          <div className="confirmation-box">
+            <p>Le livre a été mis à jour avec succès !</p>
+            <button onClick={handleConfirmationClose} className="btn-confirm">OK</button>
+          </div>
         </div>
-      </div>
-      
       )}
     </div>
   );
