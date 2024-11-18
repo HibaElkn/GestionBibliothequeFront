@@ -48,17 +48,17 @@ const Emprunts = ({ empruntsData = [], onDeleteEmprunt, onAddEmprunt }) => {
         <div className="container">
             <div className="d-flex justify-content-end mb-3"> 
             <button 
-    onClick={() => setShowAddEmpruntPopup(true)} 
-    className="btn ml-auto" 
-    style={{
-        backgroundColor: '#D99A22', 
-        color: '/#004079ff',           
-        border: '1px solid #D99A22', 
-        padding: '10px 20px',       
-        borderRadius: '5px',        
-    }}>
-    <i className="fas fa-plus"></i> Ajouter un emprunt
-</button>
+                onClick={() => setShowAddEmpruntPopup(true)} 
+                className="btn ml-auto" 
+                style={{
+                    backgroundColor: '#D99A22', 
+                    color: '/#004079ff',           
+                    border: '1px solid #D99A22', 
+                    padding: '10px 20px',       
+                    borderRadius: '5px',        
+                }}>
+                <i className="fas fa-plus"></i> Ajouter un emprunt
+            </button>
 
 </div>
 

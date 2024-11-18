@@ -20,17 +20,11 @@ import GestionReservations from './pages/GestionReservations';
 const AppContent = ({ handleDelete }) => {
   const location = useLocation();
 
-  // Vérifiez si l'utilisateur est sur la page de connexion
-  const isLoginPage = location.pathname === '/login';
-
   return (
     <>
-      {/* Affichez Header uniquement si ce n'est pas la page de connexion */}
-      {!isLoginPage && <Header />}
-      
-      {/* Affichez Navbar uniquement si ce n'est ni la page de connexion ni "/user-interface" */}
-      {!isLoginPage && location.pathname !== '/user-interface' && <Navbar />}
-      
+      <Header />
+      {/* Affichez Navbar uniquement si la route n'est pas "/user-interface" */}
+      {location.pathname !== '/user-interface' && <Navbar />}
       <Routes>
         <Route path="/gestion-personnel" element={<GestionPersonnel />} />
         <Route path="/gestion-etudiants" element={<GestionEtudiants />} />
@@ -38,9 +32,10 @@ const AppContent = ({ handleDelete }) => {
         <Route path="/gestion-Admin" element={<GestionAdmin />} />
         <Route path="/gestion-livre" element={<ParentComponent />} />
         <Route path="/gestion-emprunts" element={<GestionEmprunts />} />
-        <Route path="/gestion-reservations" element={<GestionReservations />} />
+        <Route path="/gestion-reservations" element={<GestionReservations/>} />
         <Route path="/user-interface" element={<UserInterface />} />
         <Route path="/ajouter-livre" element={<AjouterLivre onClose={() => {}} />} />
+        <Route path="/ajouter-livre" element={<ParentComponent />} />
         <Route path="/modifier-livre/:id" element={<EditLivre />} />
         <Route
           path="/supprimer-livre/:id"
@@ -51,7 +46,6 @@ const AppContent = ({ handleDelete }) => {
     </>
   );
 };
-
 
 const App = () => {
   const handleDelete = (id) => {
