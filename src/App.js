@@ -1,11 +1,9 @@
-// App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import GestionEtudiants from './pages/GestionEtudiants';
 import GestionPersonnel from './pages/GestionPersonnel';
 import GestionAdmin from './pages/GestionAdmin';
 import GestionBibliothecaires from './pages/GestionBibliothecaires';
-import GestionLivre from './pages/GestionLivres';
 import Login from './pages/LoginPage';
 import Navbar from './components/Navbar';
 import Header from './components/Header';
@@ -20,17 +18,16 @@ import GestionReservations from './pages/GestionReservations';
 const AppContent = ({ handleDelete }) => {
   const location = useLocation();
 
-  // Vérifiez si l'utilisateur est sur la page de connexion
-  const isLoginPage = location.pathname === '/login';
+  // Routes où Navbar et Header ne doivent pas être affichés
+  const hideNavbarAndHeaderRoutes = ['/login', '/user-interface'];
+
+  const shouldHideNavbarAndHeader = hideNavbarAndHeaderRoutes.includes(location.pathname);
 
   return (
     <>
-      {/* Affichez Header uniquement si ce n'est pas la page de connexion */}
-      {!isLoginPage && <Header />}
-      
-      {/* Affichez Navbar uniquement si ce n'est ni la page de connexion ni "/user-interface" */}
-      {!isLoginPage && location.pathname !== '/user-interface' && <Navbar />}
-      
+      {/* Header et Navbar ne s'affichent que si la route n'est pas dans hideNavbarAndHeaderRoutes */}
+      {!shouldHideNavbarAndHeader && <Header />}
+      {!shouldHideNavbarAndHeader && <Navbar />}
       <Routes>
         <Route path="/gestion-personnel" element={<GestionPersonnel />} />
         <Route path="/gestion-etudiants" element={<GestionEtudiants />} />
@@ -52,7 +49,6 @@ const AppContent = ({ handleDelete }) => {
   );
 };
 
-
 const App = () => {
   const handleDelete = (id) => {
     console.log("Suppression du livre avec l'id :", id);
@@ -65,4 +61,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App; 
