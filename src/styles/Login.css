@@ -1,0 +1,96 @@
+body {
+    background: linear-gradient(to right, #004079ff, #004079ff);
+    font-family: 'Arial', sans-serif;
+    color: #004079ff; 
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.login-content {
+    display: flex;
+    background-color: white;
+    border-radius: 20px; 
+    box-shadow: 0 8px 16px rgba(0, 64, 121, 0.5); 
+    overflow: hidden;
+}
+
+.login-form {
+    background: #d6e2ee;
+    padding: 40px 30px;
+    width: 400px;
+
+}
+
+.login-image {
+    display: none; 
+}
+
+.login-form h2 {
+    margin-bottom: 20px;
+    color: #004079ff;
+}
+
+.login-form .form-group {
+    margin-bottom: 15px;
+}
+
+.login-form .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #004079ff;
+    border-radius: 40px; 
+    margin-top: 5px;
+}
+
+.login-form .btn {
+    width: 100%;
+    background-color: #004079ff;
+    color: white;
+    border: none;
+    border-radius: 50px; 
+}
+
+.login-form .btn:hover {
+    background-color: #003060; 
+}
+
+.login-form .form-group a {
+    color: #004079ff; 
+}
+
+.login-form .form-group a:hover {
+    text-decoration: underline;
+}
+
+.login-image {
+    display: none;
+    width: 400px;
+    height: auto;
+}
+
+.login-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (min-width: 768px) {
+    .login-content {
+        flex-direction: row;
+    }
+
+    .login-image {
+        display: block;
+    }
+}
+
+.login-form label {
+    color: #004079ff; 
+}
+

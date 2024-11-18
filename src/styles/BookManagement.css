@@ -1,0 +1,193 @@
+body {
+    color: #004079ff;
+    background: #f5f5f5;
+    font-family: 'Varela Round', sans-serif;
+    font-size: 13px;
+}
+
+.table-wrapper {
+    padding: 10px 15px;
+    margin: 20px 0;
+    margin-left: 110px;
+    border-radius: 3px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+}
+
+.table-title {
+    padding: 16px 0;
+    margin: -10px 0px 10px;
+    margin-right: 55px;
+    border-radius: 3px 3px 0 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Supprimer l'arrière-plan des icônes et définir une couleur */
+.btn i {
+    background: none !important;  /* Enlever l'arrière-plan */
+    color: inherit;  /* Couleur de l'icône héritée du texte du bouton */
+    font-size: 16px;  /* Taille de l'icône ajustée */
+    transition: color 0.3s ease;  /* Transition douce pour la couleur de l'icône */
+}
+
+.btn {
+    border: none;  /* Enlever les bordures des boutons */
+    background: transparent;  /* Fond transparent */
+    padding: 8px 16px;  /* Espacement amélioré */
+    font-size: 14px;  /* Taille de police plus lisible */
+    font-weight: 600;  /* Mettre le texte en gras pour plus de visibilité */
+    border-radius: 5px;  /* Coins arrondis pour un effet plus doux */
+    transition: background-color 0.3s ease, color 0.3s ease;  /* Transition fluide */
+}
+
+
+
+.table-title .btn {
+    font-size: 13px;
+    padding: 6px 12px;  /* Ajuster l'espacement */
+    border-radius: 3px;
+    background-color: #004079ff;  /* Bleu */
+    color: white;
+    font-weight: bold;
+}
+
+.table-title .btn:hover {
+    background-color: #003066;  /* Couleur plus foncée au survol */
+}
+
+.btn-success {
+    background-color: #D99A22ff;  /* Jaune */
+    border-color: #D99A22ff;  /* Bordure jaune */
+    color: white;  /* Texte en blanc */
+}
+
+.btn-success:hover {
+    background-color: #c88f1eff;  /* Jaune plus foncé au survol */
+    border-color: #c88f1eff;
+}
+
+.btn-danger {
+    background-color: #b31111;  /* Rouge de base */
+    color: white;  /* Texte en blanc */
+    padding: 8px 16px;  /* Espacement amélioré */
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.btn-danger:hover {
+    background-color: #ff3d3d;  /* Rouge plus clair au survol */
+    border-color: #ff3d3d;
+}
+
+/* Limiter la largeur des colonnes pour éviter d'afficher tout le texte */
+table.table td {
+    max-width: 150px;  /* Largeur maximale de chaque cellule */
+    text-overflow: ellipsis;  /* Afficher les points de suspension pour le texte trop long */
+    overflow: hidden;  /* Cacher le texte excédentaire */
+    white-space: nowrap;  /* Empêcher les sauts de ligne */
+}
+
+/* Limiter la taille du titre et du sous-titre */
+td.titre, td.soustitre {
+    max-width: 200px;  /* Largeur maximale pour titre et sous-titre */
+    text-overflow: ellipsis;  /* Ajouter des points de suspension */
+    overflow: hidden;  /* Masquer l'excédent */
+    white-space: nowrap;  /* Ne pas casser les lignes */
+}
+
+.table-title .btn-success:hover {
+    background-color: #D99A22ff; /* Jaune au survol */
+    border-color: #D99A22ff;
+}
+
+table.table tr th {
+    background-color: #004079ff; /* Bleu */
+    color: #fff;
+}
+
+table.table {
+    width: 100%; 
+    margin: 0 auto;
+}
+
+table.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #fcfcfc;
+}
+
+table.table-striped.table-hover tbody tr:hover {
+    background: #f5f5f5;
+}
+
+.pagination {
+    float: right;
+    margin: 0 0 5px;
+    margin-top: 10px;
+    margin-right: 22px;
+}
+
+.pagination li a {
+    border: none;
+    font-size: 13px;
+    min-width: 30px;
+    min-height: 30px;
+    color: #999;
+    margin: 0 2px;
+    line-height: 30px;
+    border-radius: 2px !important;
+    text-align: center;
+    padding: 0 6px;
+}
+
+.pagination li.active a {
+    background: #004079ff; 
+}
+
+.btn-danger {
+   margin-left: 50px;
+    font-size: 14px; /* Ajuster la taille de la police */
+    border-radius: 5px; /* Ajouter des coins arrondis */
+    transition: background-color 0.3s ease; /* Animation de transition */
+}
+
+.btn-danger:hover {
+    background-color: #b31111; /* Couleur au survol */
+    border-color: #b31111; /* Bordure au survol */
+}
+
+.pagination .page-item .page-link {
+    color: #004079ff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+    margin: 0 2px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #004079ff; /* Bleu de l'élément actif */
+    color: #fff; /* Couleur du texte actif */
+    border-color: #004079ff;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d; /* Couleur du lien désactivé */
+    background-color: #fff;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: transparent ;/* Couleur de fond au survol */
+    color: #fff;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.pagination .page-item {
+    margin: 0 2px;
+}

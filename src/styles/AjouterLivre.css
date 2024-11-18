@@ -1,0 +1,100 @@
+.ajouter-livre-container {
+    width: 800px; /* Ajustez la largeur si nécessaire */
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: auto;
+    margin-top: 20px;
+    transition: transform 0.3s;
+}
+
+.ajouter-livre-container:hover {
+    transform: scale(1.02); /* Léger agrandissement au survol */
+}
+
+h2 {
+    text-align: center;
+    color: #004079ff;
+    margin-bottom: 20px; /* Ajout d'un espacement */
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #004079ff; /* Couleur légèrement plus claire pour le label */
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s; /* Transition pour la couleur de bordure */
+}
+
+input[type="text"]:focus,
+textarea:focus {
+    border-color: #004079ff; /* Changement de couleur au focus */
+    outline: none; /* Suppression de la bordure par défaut */
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, transform 0.2s; /* Transition pour le bouton */
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #004079ff;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    transform: scale(1.05); /* Léger agrandissement au survol */
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: scale(1.05); /* Léger agrandissement au survol */
+}
+
+/* Ajout d'un style pour les messages d'erreur */
+.alert {
+    color: #dc3545;
+    margin-bottom: 20px; /* Ajout d'un espacement */
+    font-weight: bold;
+}
+
+/* Espacement autour des éléments de formulaire */
+.form-group input[type="text"],
+.form-group textarea {
+    margin-bottom: 10px; /* Espacement entre les champs */
+}
+
+/* Style du textarea pour le livre */
+textarea {
+    resize: vertical; /* Permettre le redimensionnement vertical */
+}

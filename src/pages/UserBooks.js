@@ -1,0 +1,138 @@
+// components/UserBooks.js
+import React, { useState } from 'react';
+import { Modal, Button, Form, Alert } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/UserBooks.css';
+
+const defaultCoverImage = 'https://via.placeholder.com/150';
+
+const UserBooks = ({ booksData }) => {
+    return (
+        <div className="books-section">
+            <div className="row">
+                {booksData.length > 0 ? (
+                    booksData.map((book) => (
+                        <BookCard key={book.id} book={book} />
+                    ))
+                ) : (
+                    <p className="text-center">Aucun livre trouvé pour cette catégorie.</p>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const BookCard = ({ book }) => {
+    const [showMore, setShowMore] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [borrowDate, setBorrowDate] = useState('');
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    const handleBorrowClick = () => {
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setBorrowDate('');
+        setShowSuccess(false);
+    };
+
+    const handleDateChange = (e) => {
+        setBorrowDate(e.target.value);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        // Simule l'envoi de la demande d'emprunt
+        console.log(`Demande d'emprunt pour le livre "${book.title}" le ${borrowDate}`);
+        
+        // Affiche le message de succès dans la modale
+        setShowSuccess(true);
+        
+        // Réinitialise le champ de date après la soumission
+        setBorrowDate('');
+        
+        // Cache le message de succès et ferme la modale après 3 secondes
+        setTimeout(() => {
+            setShowSuccess(false);
+            setShowModal(false);
+        }, 3000);
+    };
+
+    return (
+        <div className="col-md-4 mb-4">
+            <div className="card h-100">
+                <img src={book.coverImage || defaultCoverImage} className="card-img-top" alt={book.title} />
+                <div className="card-body">
+                    <h5 className="card-title">{book.title}</h5>
+                    <p className="card-text"><strong>Auteur(s) :</strong> {Array.isArray(book.author) ? book.author.join(', ') : book.author}</p>
+
+                    <p className={`card-text ${book.available ? 'text-success' : 'text-danger'}`}>
+                        <strong>Disponibilité :</strong> {book.available ? 'Disponible' : 'Indisponible'}
+                    </p>
+
+                    {showMore && (
+                        <>
+                            <p className="card-text"><strong>Catégorie :</strong> {book.category}</p>
+                            <p className="card-text"><strong>Langue :</strong> {book.language}</p>
+                        </>
+                    )}
+
+                    {/* Conteneur pour les boutons avec flexbox */}
+                    <div className="button-container mt-2">
+                        <button
+                            className="btn btn-see"
+                            onClick={() => setShowMore(!showMore)}
+                        >
+                            {showMore ? 'Voir moins' : 'Voir plus'}
+                        </button>
+
+                        {book.available && (
+                            <button
+                                className="btn btn-success"
+                                onClick={handleBorrowClick}
+                            >
+                                Emprunter
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Modal pour la demande d'emprunt */}
+                    <Modal show={showModal} onHide={handleCloseModal}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Demande d'emprunt</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            {showSuccess ? (
+                                // Message de succès après l'envoi de la demande
+                                <Alert variant="success" className="text-center">
+                                    <i className="bi bi-check-circle-fill"></i> Demande d'emprunt envoyée avec succès !
+                                </Alert>
+                            ) : (
+                                // Formulaire de demande d'emprunt
+                                <Form onSubmit={handleSubmit}>
+                                    <Form.Group controlId="borrowDate">
+                                        <Form.Label>Date d'emprunt</Form.Label>
+                                        <Form.Control
+                                            type="date"
+                                            value={borrowDate}
+                                            onChange={handleDateChange}
+                                            required
+                                        />
+                                    </Form.Group>
+                                    <Button variant="primary" type="submit" className="mt-3">
+                                        Envoyer la demande
+                                    </Button>
+                                </Form>
+                            )}
+                        </Modal.Body>
+                    </Modal>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default UserBooks;
