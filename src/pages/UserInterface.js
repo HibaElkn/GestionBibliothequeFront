@@ -37,7 +37,6 @@ const UserInterface = () => {
         category: '',
         language: ''
     });
-    const [borrowedBooks, setBorrowedBooks] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
 
@@ -56,19 +55,6 @@ const UserInterface = () => {
         }));
     };
 
-    const handleBorrowBook = (book) => {
-        const newBorrowedBooks = [...borrowedBooks, { ...book, borrowDate: new Date() }];
-        setBorrowedBooks(newBorrowedBooks);
-    };
-
-    const handleRequestExtension = (bookId) => {
-        alert(`Demande d'extension pour le livre ID: ${bookId}`);
-    };
-    const calculateReturnDate = (borrowDate) => {
-        const returnDate = new Date(borrowDate);
-        returnDate.setDate(returnDate.getDate() + 3); // Ajoute 3 jours à la date d'emprunt
-        return returnDate;
-    };
     const filteredBooks = booksData.filter((book) => {
         const matchesAvailability = !filters.availableOnly || book.available;
         const matchesKeywords = filters.keywords === '' || book.title.toLowerCase().includes(filters.keywords.toLowerCase()) || book.author.toLowerCase().includes(filters.keywords.toLowerCase());
@@ -86,22 +72,9 @@ const UserInterface = () => {
 
     return (
         <div className="container user-interface">
-            <div className="d-flex justify-content-center my-3">
-                <button
-                    className={`btn ${view === 'catalogue' ? 'catalogue-btn' : 'btn-outline-primary'} me-2`}
-                    onClick={() => setView('catalogue')}
-                >
-                    Catalogue
-                </button>
-                <button
-                    className={`btn ${view === 'emprunts' ? 'emprunts-btn' : 'btn-outline-primary'}`}
-                    onClick={() => setView('emprunts')}
-                >
-                    Mes Emprunts
-                </button>
-            </div>
+        
 
-            {view === 'catalogue' ? (
+            {view === 'catalogue' && (
                 <>
                     <div className="row">
                         <div className="col-md-3">
@@ -147,7 +120,7 @@ const UserInterface = () => {
                             </div>
                         </div>
                         <div className="col-md-9">
-                            <UserBooks booksData={currentBooks} onBorrowBook={handleBorrowBook} />
+                            <UserBooks booksData={currentBooks} />
                             <nav className="mt-4">
                                 <ul className="pagination justify-content-center">
                                     {[...Array(totalPages).keys()].map((number) => (
@@ -164,38 +137,6 @@ const UserInterface = () => {
                         </div>
                     </div>
                 </>
-            ) : (
-                <div className="borrowed-books-section">
-                    <table className="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Titre</th>
-                                <th>Auteur</th>
-                                <th>Date d'Emprunt</th>
-                                <th>Date de retour</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {borrowedBooks.map((book) => (
-                                <tr key={book.id}>
-                                    <td>{book.title}</td>
-                                    <td>{book.author}</td>
-                                    <td>{book.borrowDate.toLocaleDateString()}</td>
-                                    <td>{calculateReturnDate(book.borrowDate).toLocaleDateString()}</td>
-                                    <td>
-                                        <button
-                                            className="btn btn-warning btn-sm"
-                                            onClick={() => handleRequestExtension(book.id)}
-                                        >
-                                            Demander une Extension
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
             )}
         </div>
     );

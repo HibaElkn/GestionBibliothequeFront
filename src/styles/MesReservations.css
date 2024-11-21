@@ -1,0 +1,71 @@
+/* Style général du tableau */
+.table {
+    margin-top: 30px;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  /* Entêtes du tableau */
+  .table th {
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  /* Lignes du tableau */
+  .table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Lignes du tableau en survol */
+  .table tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  /* Style du bouton Annuler */
+  .btn-danger {
+    background-color: #e74c3c;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Effet au survol du bouton Annuler */
+  .btn-danger:hover {
+    background-color: #c0392b;
+  }
+  
+  /* Centrer le texte dans la table */
+  .text-center {
+    text-align: center;
+  }
+  
+  /* Message lorsque aucune réservation n'est présente */
+  .table td[colspan="4"] {
+    font-size: 18px;
+    color: #888;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  /* Style général de la page */
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Titre de la page */
+  h3 {
+    font-family: 'Arial', sans-serif;
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  

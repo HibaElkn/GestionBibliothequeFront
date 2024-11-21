@@ -1,9 +1,9 @@
-// components/Reservations.js
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'font-awesome/css/font-awesome.min.css'; // Assurez-vous d'importer FontAwesome
 import '../styles/Emprunts.css';
 
-const GestionReservations = ({ reservationsData = [], onDeleteReservation, onAddReservation }) => { 
+const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
     const [showAddReservationPopup, setShowAddReservationPopup] = useState(false);
@@ -13,11 +13,42 @@ const GestionReservations = ({ reservationsData = [], onDeleteReservation, onAdd
         nomPrenom: '',
         titreLivre: '',
         dateReservation: '',
+        statut: 'en attente', // Valeur par défaut
     });
+
+    const [reservationsData, setReservationsData] = useState([
+        {
+            id: 1,
+            cne: '123456',
+            numSom: '7890',
+            nomPrenom: 'John Doe',
+            titreLivre: 'Le Grand Livre',
+            dateReservation: '2024-11-20',
+            statut: 'confirmé',
+        },
+        {
+            id: 2,
+            cne: '234567',
+            numSom: '8901',
+            nomPrenom: 'Jane Smith',
+            titreLivre: 'Les Mystères de l\'univers',
+            dateReservation: '2024-11-21',
+            statut: 'en attente',
+        },
+        {
+            id: 3,
+            cne: '345678',
+            numSom: '9012',
+            nomPrenom: 'Marc Dupont',
+            titreLivre: 'Le Voyage Extraordinaire',
+            dateReservation: '2024-11-22',
+            statut: 'refusé',
+        }
+    ]);
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = Array.isArray(reservationsData) ? reservationsData.slice(indexOfFirstItem, indexOfLastItem) : [];
+    const currentItems = reservationsData.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(reservationsData.length / itemsPerPage);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -41,8 +72,31 @@ const GestionReservations = ({ reservationsData = [], onDeleteReservation, onAdd
             nomPrenom: '',
             titreLivre: '',
             dateReservation: '',
+            statut: 'en attente', // Réinitialise le statut à "en attente"
         }); // Réinitialise le formulaire
     };
+
+    const getStatutClass = (statut) => {
+        switch (statut) {
+            case 'confirmé':
+                return 'bg-success text-white';
+            case 'en attente':
+                return 'bg-warning text-dark';
+            case 'refusé':
+                return 'bg-danger text-white';
+            default:
+                return '';
+        }
+    };
+
+    const handleStatutChange = (id, newStatut) => {
+        const updatedReservations = reservationsData.map(reservation => 
+            reservation.id === id ? { ...reservation, statut: newStatut } : reservation
+        );
+        setReservationsData(updatedReservations);
+    };
+
+    const [editingStatut, setEditingStatut] = useState(null); // State pour gérer quel statut est en cours d'édition
 
     return (
         <div className="container">
@@ -59,7 +113,6 @@ const GestionReservations = ({ reservationsData = [], onDeleteReservation, onAdd
                     }}>
                     <i className="fas fa-plus"></i> Ajouter une réservation
                 </button>
-                
             </div>
 
             <div className="table-wrapper">
@@ -70,6 +123,7 @@ const GestionReservations = ({ reservationsData = [], onDeleteReservation, onAdd
                             <th>Nom et Prénom</th>
                             <th>Titre du Livre</th>
                             <th>Date de réservation</th>
+                            <th>Statut</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -80,6 +134,33 @@ const GestionReservations = ({ reservationsData = [], onDeleteReservation, onAdd
                                 <td>{reservation.nomPrenom}</td>
                                 <td>{reservation.titreLivre}</td>
                                 <td>{reservation.dateReservation}</td>
+                                <td>
+                                    <span className={`badge ${getStatutClass(reservation.statut)} rounded-3`}>
+                                        {reservation.statut}
+                                    </span>
+                                    
+                                    <button 
+                                        className="btn btn-sm btn-info ms-2" 
+                                        onClick={() => setEditingStatut(reservation.id)}
+                                    >
+                                        <i className="fa fa-pencil-alt"></i>
+                                    </button>
+
+                                    {editingStatut === reservation.id && (
+                                        <select 
+                                            value={reservation.statut} 
+                                            onChange={(e) => {
+                                                handleStatutChange(reservation.id, e.target.value);
+                                                setEditingStatut(null); 
+                                            }}
+                                            className="form-select form-select-sm ms-2"
+                                        >
+                                            <option value="confirmé">Confirmé</option>
+                                            <option value="en attente">En attente</option>
+                                            <option value="refusé">Refusé</option>
+                                        </select>
+                                    )}
+                                </td>
                                 <td>
                                     <button 
                                         onClick={() => handleDeleteReservation(reservation.id)} 
@@ -119,8 +200,13 @@ const GestionReservations = ({ reservationsData = [], onDeleteReservation, onAdd
                         <input type="text" name="nomPrenom" placeholder="Nom et Prénom" onChange={handleAddReservationChange} value={newReservation.nomPrenom} />
                         <input type="text" name="titreLivre" placeholder="Titre du Livre" onChange={handleAddReservationChange} value={newReservation.titreLivre} />
                         <input type="date" name="dateReservation" placeholder="Date de Réservation" onChange={handleAddReservationChange} value={newReservation.dateReservation} />
-                        <button onClick={handleAddReservationSubmit} className="btn btn-primary custom-btn mt-2">Ajouter la réservation</button>
-                        <button onClick={() => setShowAddReservationPopup(false)} className="btn btn-secondary mt-2">Annuler</button>
+                        <select name="statut" value={newReservation.statut} onChange={handleAddReservationChange} className="form-select form-select-sm">
+                            <option value="en attente">En attente</option>
+                            <option value="confirmé">Confirmé</option>
+                            <option value="refusé">Refusé</option>
+                        </select>
+                        <button onClick={handleAddReservationSubmit} className="btn btn-success">Ajouter</button>
+                        <button onClick={() => setShowAddReservationPopup(false)} className="btn btn-secondary">Annuler</button>
                     </div>
                 </div>
             )}

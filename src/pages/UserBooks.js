@@ -25,34 +25,33 @@ const UserBooks = ({ booksData }) => {
 const BookCard = ({ book }) => {
     const [showMore, setShowMore] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [borrowDate, setBorrowDate] = useState('');
+    const [reserveDate, setReserveDate] = useState(''); // Remplacer 'borrowDate' par 'reserveDate'
     const [showSuccess, setShowSuccess] = useState(false);
 
-    const handleBorrowClick = () => {
+    const handleReserveClick = () => {
         setShowModal(true);
     };
 
     const handleCloseModal = () => {
         setShowModal(false);
-        setBorrowDate('');
+        setReserveDate('');
         setShowSuccess(false);
     };
 
     const handleDateChange = (e) => {
-        setBorrowDate(e.target.value);
+        setReserveDate(e.target.value);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // Simule l'envoi de la demande d'emprunt
-        console.log(`Demande d'emprunt pour le livre "${book.title}" le ${borrowDate}`);
+        console.log(`Demande de réservation pour le livre "${book.title}" le ${reserveDate}`);
         
         // Affiche le message de succès dans la modale
         setShowSuccess(true);
         
         // Réinitialise le champ de date après la soumission
-        setBorrowDate('');
+        setReserveDate('');
         
         // Cache le message de succès et ferme la modale après 3 secondes
         setTimeout(() => {
@@ -69,9 +68,11 @@ const BookCard = ({ book }) => {
                     <h5 className="card-title">{book.title}</h5>
                     <p className="card-text"><strong>Auteur(s) :</strong> {Array.isArray(book.author) ? book.author.join(', ') : book.author}</p>
 
-                    <p className={`card-text ${book.available ? 'text-success' : 'text-danger'}`}>
+                    <p className={`card-text ${book.available ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.8rem' }}>
                         <strong>Disponibilité :</strong> {book.available ? 'Disponible' : 'Indisponible'}
                     </p>
+
+
 
                     {showMore && (
                         <>
@@ -92,38 +93,38 @@ const BookCard = ({ book }) => {
                         {book.available && (
                             <button
                                 className="btn btn-success"
-                                onClick={handleBorrowClick}
+                                onClick={handleReserveClick}
                             >
-                                Emprunter
+                                Réserver {/* Texte mis à jour */}
                             </button>
                         )}
                     </div>
 
-                    {/* Modal pour la demande d'emprunt */}
+                    {/* Modal pour la demande de réservation */}
                     <Modal show={showModal} onHide={handleCloseModal}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Demande d'emprunt</Modal.Title>
+                            <Modal.Title>Demande de réservation</Modal.Title> {/* Titre mis à jour */}
                         </Modal.Header>
                         <Modal.Body>
                             {showSuccess ? (
                                 // Message de succès après l'envoi de la demande
                                 <Alert variant="success" className="text-center">
-                                    <i className="bi bi-check-circle-fill"></i> Demande d'emprunt envoyée avec succès !
+                                    <i className="bi bi-check-circle-fill"></i> Demande de réservation envoyée avec succès ! {/* Message mis à jour */}
                                 </Alert>
                             ) : (
-                                // Formulaire de demande d'emprunt
+                                // Formulaire de demande de réservation
                                 <Form onSubmit={handleSubmit}>
-                                    <Form.Group controlId="borrowDate">
-                                        <Form.Label>Date d'emprunt</Form.Label>
+                                    <Form.Group controlId="reserveDate">
+                                        <Form.Label>Date de réservation</Form.Label> {/* Label mis à jour */}
                                         <Form.Control
                                             type="date"
-                                            value={borrowDate}
+                                            value={reserveDate}
                                             onChange={handleDateChange}
                                             required
                                         />
                                     </Form.Group>
                                     <Button variant="primary" type="submit" className="mt-3">
-                                        Envoyer la demande
+                                        Envoyer la demande {/* Bouton mis à jour */}
                                     </Button>
                                 </Form>
                             )}

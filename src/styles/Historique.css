@@ -1,0 +1,62 @@
+/* Style général pour la page Historique des emprunts */
+.historique-emprunts-container {
+    background-color: #f9f9f9;
+    color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    margin: 30px auto;
+  }
+  
+  .titre-historique {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  /* Table */
+  .table-historique {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+  }
+  
+  .table-historique th, .table-historique td {
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  
+  .table-historique th {
+    background-color: #004079ff;
+    color: white;
+  }
+  
+  .table-historique tr:nth-child(even) {
+    background-color: #ecf0f1;
+  }
+  
+  .table-historique tr:hover {
+    background-color: #D99A22ff ;
+  }
+  
+  .table-historique td {
+    font-size: 1rem;
+  }
+  
+  .table-historique th {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  /* Style pour les messages sans emprunts */
+  p {
+    text-align: center;
+    color: #e74c3c;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  

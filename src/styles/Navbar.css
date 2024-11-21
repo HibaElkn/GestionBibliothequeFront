@@ -56,6 +56,7 @@ html, body {
 #nav-toggle:checked ~ #nav-footer .nav-button span {
   opacity: 0;
   transition: opacity 0.1s;
+
 }
   
 /* Icônes restent visibles */
@@ -64,7 +65,7 @@ html, body {
 }
 
 #nav-bar {
-  position: absolute;
+  position: fixed;
   left: 1vw;
   bottom: 1vw;
   height: calc(100% - 6vw);
@@ -76,6 +77,8 @@ html, body {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   overflow: hidden;
   user-select: none;
+  top: 90px;
+  flex-wrap: wrap;
 }
 hr {
   margin: 0;
@@ -214,6 +217,9 @@ label[for=nav-toggle] {
   transition: background-color 0.3s;
   
 }
+#nav-toggle:checked ~ #nav-footer .logout-button span {
+  display: none; 
+}
 .nav-button span {
   transition: opacity 1s;
   color: #004079ff; 
@@ -244,6 +250,21 @@ label[for=nav-toggle] {
   text-align: center;
   color: #004079ff; /* Icônes en noir */
 }
+.sub-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  justify-content: flex-start; /* Aligne à gauche */
+}
+
+.sub-menu-item i {
+  margin-right: 10px; /* Espacement entre l'icône et le texte */
+  font-size: 18px;
+  color: #333; /* Vous pouvez ajuster la couleur des icônes */
+}
+
+
+
 
 #nav-footer {
   position: relative;
@@ -290,18 +311,7 @@ label[for=nav-toggle] {
   padding-top: 8px;
   overflow: hidden;
 }
-.sub-menu-item i {
-  float: none;
-  margin: 0; /* S'assurer que l'icône reste avant le texte */
-}
 
-.sub-menu-item {
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-}
 
 .sub-menu-item:hover {
   background: white;
@@ -312,17 +322,6 @@ label[for=nav-toggle] {
   
 }
 
-.sub-menu-item .sub-menu {
-  display: none;
-  position: absolute;
-  top: 0;
-  right: 100%;
-  margin-right: 10px;
-}
-
-.sub-menu-item:hover .sub-menu {
-  display: flex;
-}
 
 .breadcrumb {
   display: flex;

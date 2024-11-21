@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../styles/UserManagement.css';
-
+    
 const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onDeleteSelected, onAdd, onImport }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);

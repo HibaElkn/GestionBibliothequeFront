@@ -1,13 +1,16 @@
 /* styles/UserInterface.css */
 .user-interface {
     padding: 20px;
+
 }
 
 .filter-section {
     border: 1px solid #ddd;
+    margin-left: 100px;
     border-radius: 5px;
     padding: 10px;
     background-color: #f8f9fa;
+    width: 200px;
 }
 .filter-section h5 {
     margin-bottom: 15px;

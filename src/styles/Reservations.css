@@ -1,0 +1,72 @@
+.reservation.statut {
+    display: inline-block;
+    padding: 10px 20px;    
+    border-radius: 20px;   
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    height: max-content;    
+    font-size: 20px;        
+}
+
+.status-confirmed {
+    background-color: #2ecc71; /* Vert pour "Confirmé" */
+    font-size: 20px; 
+}
+
+.status-pending {
+    background-color: #f39c12; /* Jaune pour "En Attente" */
+}
+
+.status-refused {
+    background-color: #e74c3c; /* Rouge pour "Refusé" */
+}
+
+
+.select-statut option {
+    color: #333; 
+    background-color: #fff;
+}
+
+.select-statut:focus {
+    outline: none; 
+}
+
+
+.select-statut .form-select {
+    width: 120px;
+}
+
+.select-statut:hover {
+    background-color: #f9f9f9;
+}
+
+.select-statut .form-select:focus {
+    background-color: #f1f1f1;
+}
+
+/* Badge pour les statuts confirmés */
+.bg-success {
+    background-color: #28a745 !important;
+    color: white;
+}
+
+/* Badge pour les statuts en attente */
+.bg-warning {
+    background-color: #ffc107 !important;
+    color: black;
+}
+
+/* Badge pour les statuts refusés */
+.bg-danger {
+    background-color: #dc3545 !important;
+    color: white;
+}
+.edit-status-btn {
+    background-color: transparent;  
+    color: #fff;                
+    padding: 5px 10px;          /* Espacement interne */
+    font-size: 14px;            /* Taille de la police */
+}
+
+

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Header.css';
 import logo from '../assets/Fsts.png';
-
+import { Link } from 'react-router-dom'; 
 const Header = () => {
   const [showProfileDetails, setShowProfileDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +31,10 @@ const Header = () => {
     console.log('Recherche pour:', searchTerm);
   };
 
+  const toggleNotification = () => {
+    setHasNotification(!hasNotification); // Change l'état des notifications
+  };
+
   return (
     <div className="header">
       <img src={logo} alt="Logo" className="logo" />
@@ -46,25 +50,26 @@ const Header = () => {
         <i className="fas fa-search search-icon"></i> 
       </form>
 
-      <div className="notifications-container">
+      <div className="notifications-container" onClick={toggleNotification}>
         <i
           className={`fas fa-bell notification-icon-outline ${hasNotification ? 'has-notification' : ''}`}
         />
         {hasNotification && <div className="notification-dot"></div>}
       </div>
 
-      <div className="profile-container" onClick={handleProfileClick}>
-        <i className="fas fa-user-circle profile-icon"></i>
-        <span className="profile-name">NOM PRENOM</span>
-        {showProfileDetails && (
-          <div className="profile-details">
-            <p><strong>Nom:</strong> VotreNom</p>
-            <p><strong>Prénom:</strong> VotrePrénom</p>
-            <p><strong>Email:</strong> email@example.com</p>
-            <p><strong>Code:</strong> Code123</p>
-          </div>
-        )}
-      </div>
+        <div className="profile-container" onClick={handleProfileClick}>
+        <Link to="/profil">
+ <i className="fas fa-user-circle profile-icon"></i> </Link>
+          <span className="profile-name">NOM PRENOM</span>
+          {showProfileDetails && (
+            <div className="profile-details">
+              <p><strong>Nom:</strong> VotreNom</p>
+              <p><strong>Prénom:</strong> VotrePrénom</p>
+              <p><strong>Email:</strong> email@example.com</p>
+              <p><strong>Code:</strong> Code123</p>
+            </div>
+          )}
+        </div>
     </div>
   );
 };

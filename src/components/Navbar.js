@@ -7,7 +7,7 @@ const Navbar = () => {
   const [showUsersSubMenu, setShowUsersSubMenu] = useState(false);
   const [showEmpruntsSubMenu, setShowEmpruntsSubMenu] = useState(false);
 
-  const location = useLocation(); // Utilisation pour déterminer la route actuelle
+  const location = useLocation(); 
 
   const toggleUsersSubMenu = () => {
     setShowUsersSubMenu(!showUsersSubMenu);
@@ -17,48 +17,7 @@ const Navbar = () => {
     setShowEmpruntsSubMenu(!showEmpruntsSubMenu);
   };
 
-  // Vérifie si l'utilisateur est sur "/user-interface"
-  const isUserInterface = location.pathname === '/user-interface';
 
-  if (isUserInterface) {
-    // Navbar simplifiée pour "/user-interface"
-    return (
-      <div id="nav-bar">
-        <div id="nav-content">
-          {/* Icône pour voir les livres */}
-          <Link to="/catalogue-livres" className="nav-button nav-button-management">
-            <i className="fas fa-book"></i>
-            <span>Livres</span>
-          </Link>
-          {/* Icône pour mes emprunts */}
-          <Link to="/mes-emprunts" className="nav-button nav-button-management">
-            <i className="fas fa-calendar-check"></i>
-            <span>Mes emprunts</span>
-          </Link>
-        </div>
-        <div id="nav-footer">
-          <Link to="/logout" className="logout-button" 
-            style={{
-              backgroundColor: '#f39c12',  // Couleur de fond jaune
-              color: 'white',              // Couleur du texte en blanc
-              border: 'none',              // Pas de bordure
-              padding: '10px 20px',        // Espacement intérieur
-              borderRadius: '5px',         // Coins arrondis
-              fontSize: '16px',            // Taille du texte
-              transition: 'background-color 0.3s ease',  // Transition douce
-            }}
-            onMouseOver={(e) => e.target.style.backgroundColor = '#e67e22'}  // Couleur au survol
-            onMouseOut={(e) => e.target.style.backgroundColor = '#f39c12'}    // Rétablir la couleur initiale
-          >
-            <i className="fas fa-sign-out-alt"></i>
-            <span>Déconnexion</span>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // Navbar complète pour les autres routes
   return (
     <div id="nav-bar">
       <input id="nav-toggle" type="checkbox" />
