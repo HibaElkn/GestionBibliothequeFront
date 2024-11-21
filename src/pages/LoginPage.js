@@ -18,7 +18,6 @@ const LoginPage = () => {
             // Stocker le token dans le localStorage
             localStorage.setItem('access-token', data['access-token']);
             console.log(localStorage.setItem('access-token', data['access-token']));
-            alert("Connexion réussie!");
             navigate('/gestion-etudiants'); // Redirection après une connexion réussie
         } catch (error) {
             setError("Identifiants incorrects ou erreur de connexion. Veuillez réessayer.");
@@ -59,9 +58,12 @@ const LoginPage = () => {
                         </div>
                         <button type="submit" className="btn btn-primary btn-block">Login</button>
                     </form>
-                    <div className="text-center mt-3">
-                        <p>Vous n'avez pas de compte ? <Link to="/sign-up">Sign-up</Link></p>
-                    </div>
+                    {/*
+<div className="text-center mt-3">
+    <p>Vous n'avez pas de compte ? <Link to="/sign-up">Sign-up</Link></p>
+</div>
+*/}
+
                 </div>
                 <div className="login-image">
                     <img src={Login} alt="Login" />

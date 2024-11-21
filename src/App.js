@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate} from 'react-router-dom';
 import GestionEtudiants from './pages/GestionEtudiants';
 import GestionPersonnel from './pages/GestionPersonnel';
 import GestionAdmin from './pages/GestionAdmin';
@@ -15,7 +15,7 @@ import ParentComponent from './components/ParentComponent';
 import GestionEmprunts from './pages/GestionEmprunts';
 import UserInterface from './pages/UserInterface';
 import GestionReservations from './pages/GestionReservations';
-import Dashboard from './pages/Dashbboard';
+
 import Historique from './pages/historique';
 import './App.css'; 
 import Profil from './pages/Profil';
@@ -23,6 +23,8 @@ import MesReservations from './pages/MesReservations';
 
 const AppContent = ({ handleDelete }) => {
   const location = useLocation();
+  
+
 
   // Définir les routes spécifiques
   const hideNavbarAndHeaderRoutes = ['/login'];
@@ -45,6 +47,7 @@ const AppContent = ({ handleDelete }) => {
       {/* Contenu principal */}
       <div className="container mt-4">
         <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} /> 
           <Route path="/gestion-personnel" element={<GestionPersonnel />} />
           <Route path="/gestion-etudiants" element={<GestionEtudiants />} />
           <Route path="/gestion-bibliothecaires" element={<GestionBibliothecaires />} />
@@ -53,7 +56,6 @@ const AppContent = ({ handleDelete }) => {
           <Route path="/gestion-emprunts" element={<GestionEmprunts />} />
           <Route path="/gestion-reservations" element={<GestionReservations />} />
           <Route path="/user-interface" element={<UserInterface />} />
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/historique" element={<Historique />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/mes-reservations" element={<MesReservations />} />

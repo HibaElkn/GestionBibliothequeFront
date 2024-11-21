@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import '../styles/Navbar.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Link, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 
 const Navbar = () => {
   const [showUsersSubMenu, setShowUsersSubMenu] = useState(false);
@@ -17,6 +19,12 @@ const Navbar = () => {
     setShowEmpruntsSubMenu(!showEmpruntsSubMenu);
   };
 
+  const navigate = useNavigate(); // Remplacez useHistory() par useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('access-token'); // Suppression du token
+    navigate('/login'); // Utilisez navigate pour rediriger vers la page de login
+  };
 
   return (
     <div id="nav-bar">
@@ -87,7 +95,7 @@ const Navbar = () => {
 
       <input id="nav-footer-toggle" type="checkbox" />
       <div id="nav-footer">
-        <Link to="/login" className="logout-button" 
+        <Link to="/login" onClick={handleLogout} className="logout-button" 
           style={{
             border: 'none',             
             padding: '10px 20px',        

@@ -4,13 +4,22 @@ const defaultHeaders = {
     'Content-Type': 'application/json',
     'Accept': '*/*'
 };
+
+const getToken = () => {
+    return localStorage.getItem('access-token');
+    
+};
+
 const documentService = {
 // Fetch all documents
 getAllDocuments: async () => {
     try {
         const response = await fetch(`${API_URL}`, {
             method: 'GET',
-            headers: defaultHeaders,
+            headers: {
+                defaultHeaders,
+                Authorization: `Bearer ${getToken()}`
+            }
         });
 
         if (!response.ok) throw new Error('Failed to fetch documents');
@@ -61,81 +70,133 @@ getAllDocuments: async () => {
     // Save a single document
     saveDocument: async (documentData) => {
         try {
+            // Log the token and data being sent
+            console.log('Token:', getToken());
+            console.log('Document Data:', documentData);
+    
             const response = await fetch(`${API_URL}/save`, {
                 method: 'POST',
-                headers: defaultHeaders,
-                body: JSON.stringify(documentData),
+                headers: {
+                    ...defaultHeaders, // Correct header structure
+                    Authorization: `Bearer ${getToken()}` // Bearer token
+                },
+                body: JSON.stringify(documentData), // Correct JSON body
             });
-
+    
             if (!response.ok) {
                 const errorResponse = await response.text();
                 console.error('Error response from backend:', errorResponse);
-                throw new Error('Failed to save document');
+                throw new Error(`Failed to save document: ${response.status}`);
             }
-
-            return await response.json();
+    
+            const data = await response.json();
+            console.log('Document saved successfully:', data);
+            return data;
         } catch (error) {
-            console.error('Error saving document:', error);
+            console.error('Error saving document:', error.message);
             throw error;
         }
     },
+    
     saveDocuments: async (documentsArray) => {
         try {
+            // Log documents to be saved
+            console.log('Documents Array:', documentsArray);
+    
             const response = await fetch(`${API_URL}/saveAll`, {
                 method: 'POST',
-                headers: defaultHeaders,
-                body: JSON.stringify(documentsArray),  // Sending the cleaned data to the backend
+                headers: {
+                    ...defaultHeaders, // Correct header structure
+                    Authorization: `Bearer ${getToken()}` // Bearer token
+                },
+                body: JSON.stringify(documentsArray), // Correct JSON array
             });
     
             if (!response.ok) {
-                const errorText = await response.text(); // Get the error response text
+                const errorText = await response.text(); // Log backend error response
                 console.error('Error from backend:', errorText);
-                throw new Error('Failed to save documents');
+                throw new Error(`Failed to save documents: ${response.status}`);
             }
     
-            return await response.json();  // Returning the response from the backend
+            const data = await response.json();
+            console.log('Documents saved successfully:', data);
+            return data;
         } catch (error) {
-            console.error('Error saving documents:', error);
-            throw error;
-        }
-    },    
-    // Change document status
-    changeDocumentStatus: async (id, newStatut) => {
-        try {
-            const response = await fetch(`${API_URL}/changeStatus/${id}?newStatut=${newStatut}`, {
-                method: 'PUT',
-                headers: defaultHeaders
-            });
-            if (!response.ok) throw new Error('Failed to change document status');
-            return await response.json();
-        } catch (error) {
-            console.error('Error changing document status:', error);
+            console.error('Error saving documents:', error.message);
             throw error;
         }
     },
+       
+    // Change document status
+    changeDocumentStatus: async (id, newStatut) => {
+        try {
+            // Log inputs
+            console.log('Changing document status for ID:', id, 'to newStatut:', newStatut);
+    
+            const response = await fetch(`${API_URL}/changeStatus/${id}?newStatut=${newStatut}`, {
+                method: 'PUT',
+                headers: {
+                    ...defaultHeaders, // Correct header structure
+                    Authorization: `Bearer ${getToken()}` // Bearer token
+                }
+            });
+    
+            if (!response.ok) {
+                const errorText = await response.text(); // Log backend error response
+                console.error('Error from backend:', errorText);
+                throw new Error(`Failed to change document status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            console.log('Document status changed successfully:', data);
+            return data;
+        } catch (error) {
+            console.error('Error changing document status:', error.message);
+            throw error;
+        }
+    },
+    
 
     // Update a document
     updateDocument: async (id, documentData) => {
         try {
+            // Log inputs
+            console.log('Updating document with ID:', id, 'with data:', documentData);
+    
             const response = await fetch(`${API_URL}/update/${id}`, {
                 method: 'PUT',
-                headers: defaultHeaders,
-                body: JSON.stringify(documentData),
+                headers: {
+                    ...defaultHeaders, // Correct header structure
+                    Authorization: `Bearer ${getToken()}` // Bearer token
+                },
+                body: JSON.stringify(documentData), // Correct JSON body
             });
-            if (!response.ok) throw new Error('Failed to update document');
-            return await response.json();
+    
+            if (!response.ok) {
+                const errorText = await response.text(); // Log backend error response
+                console.error('Error from backend:', errorText);
+                throw new Error(`Failed to update document: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            console.log('Document updated successfully:', data);
+            return data;
         } catch (error) {
-            console.error('Error updating document:', error);
+            console.error('Error updating document:', error.message);
             throw error;
         }
     },
+    
 
     // Delete a document
     deleteDocument: async (id) => {
         try {
             const response = await fetch(`${API_URL}/delete/${id}`, {
                 method: 'DELETE',
-                headers: defaultHeaders
+                headers: {
+                    defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
+                },
             });
             if (!response.ok) throw new Error('Failed to delete document');
             return true;
