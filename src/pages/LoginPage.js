@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../styles/Login.css'; 
+import '../styles/Login.css';
 import Login from '../assets/login.jpg';
-import { Link, useNavigate } from 'react-router-dom';  // Importez useNavigate
+import { Link, useNavigate } from 'react-router-dom';
+import { login } from '../services/loginService'; // Importation du service
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const navigate = useNavigate(); // Initialisez useNavigate
+    const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (email === "test@example.com" && password === "password123") {
+        try {
+            const data = await login(email, password);
+            // Stocker le token dans le localStorage
+            localStorage.setItem('access-token', data['access-token']);
+            console.log(localStorage.setItem('access-token', data['access-token']));
             alert("Connexion réussie!");
-            navigate('/home'); // Redirige vers la page principale après une connexion réussie
-        } else {
-            setError("Identifiants incorrects. Veuillez réessayer.");
+            navigate('/gestion-etudiants'); // Redirection après une connexion réussie
+        } catch (error) {
+            setError("Identifiants incorrects ou erreur de connexion. Veuillez réessayer.");
         }
     };
 

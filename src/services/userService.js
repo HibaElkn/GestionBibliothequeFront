@@ -1,9 +1,18 @@
 const API_BASE_URL = 'http://localhost:8080/api/utilisateur';
 
+const getToken = () => {
+    return localStorage.getItem('access-token');
+    
+};
+
 // Fonction générique pour récupérer les utilisateurs
 const getUsers = async (type) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/${type}`);
+        const response = await fetch(`${API_BASE_URL}/${type}`, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch users');
         }
@@ -16,26 +25,32 @@ const getUsers = async (type) => {
 
 // Fonction générique pour ajouter un utilisateur
 const addUser = async (type, utilisateur, password) => {
-    try {
         const response = await fetch(`${API_BASE_URL}/${type}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'password': password
+                'Authorization': `Bearer ${getToken()}`, // Ajoute le token dans les headers
+                'password': password,
             },
-            body: JSON.stringify(utilisateur)
+            body: JSON.stringify(utilisateur),
         });
+
+        if (!response.ok) {
+            throw new Error(`Erreur lors de l'ajout de l'utilisateur ${type}`);
+        }
+
         return await response.json();
-    } catch (error) {
-        console.error(`Erreur lors de l'ajout du ${type}:`, error);
-    }
+   
 };
+
+
 export const addAllUsers = async (type, utilisateurs, passwords) => {
     try {
         const response = await fetch(`${API_BASE_URL}/save/list/${type}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${getToken()}`,
             },
             body: JSON.stringify({ utilisateurs, passwords }),
         });
@@ -55,6 +70,7 @@ const updateUser = async (type, id, updatedUserData) => {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${getToken()}`,
             },
             body: JSON.stringify(updatedUserData),
         });
@@ -75,6 +91,9 @@ const deleteUser = async (type, id) => {
     try {
         const response = await fetch(`${API_BASE_URL}/${type}/${id}`, {
             method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+            },
         });
         if (!response.ok) {
             throw new Error('Failed to delete user');
@@ -91,6 +110,7 @@ const deleteAllUsers = async (type, ids) => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${getToken()}`,
             },
             body: JSON.stringify({ ids }),
         });
@@ -106,10 +126,6 @@ const deleteAllUsers = async (type, ids) => {
 const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
 };
-
-
-
-
 
 export default {
     getUsers,
