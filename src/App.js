@@ -1,11 +1,9 @@
-// App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import GestionEtudiants from './pages/GestionEtudiants';
 import GestionPersonnel from './pages/GestionPersonnel';
 import GestionAdmin from './pages/GestionAdmin';
 import GestionBibliothecaires from './pages/GestionBibliothecaires';
-import GestionLivre from './pages/GestionLivres';
 import Login from './pages/LoginPage';
 import Navbar from './components/Navbar';
 import Header from './components/Header';
@@ -20,11 +18,16 @@ import GestionReservations from './pages/GestionReservations';
 const AppContent = ({ handleDelete }) => {
   const location = useLocation();
 
+  // Routes où Navbar et Header ne doivent pas être affichés
+  const hideNavbarAndHeaderRoutes = ['/login', '/user-interface'];
+
+  const shouldHideNavbarAndHeader = hideNavbarAndHeaderRoutes.includes(location.pathname);
+
   return (
     <>
-      <Header />
-      {/* Affichez Navbar uniquement si la route n'est pas "/user-interface" */}
-      {location.pathname !== '/user-interface' && <Navbar />}
+      {/* Header et Navbar ne s'affichent que si la route n'est pas dans hideNavbarAndHeaderRoutes */}
+      {!shouldHideNavbarAndHeader && <Header />}
+      {!shouldHideNavbarAndHeader && <Navbar />}
       <Routes>
         <Route path="/gestion-personnel" element={<GestionPersonnel />} />
         <Route path="/gestion-etudiants" element={<GestionEtudiants />} />
@@ -32,10 +35,9 @@ const AppContent = ({ handleDelete }) => {
         <Route path="/gestion-Admin" element={<GestionAdmin />} />
         <Route path="/gestion-livre" element={<ParentComponent />} />
         <Route path="/gestion-emprunts" element={<GestionEmprunts />} />
-        <Route path="/gestion-reservations" element={<GestionReservations/>} />
+        <Route path="/gestion-reservations" element={<GestionReservations />} />
         <Route path="/user-interface" element={<UserInterface />} />
         <Route path="/ajouter-livre" element={<AjouterLivre onClose={() => {}} />} />
-        <Route path="/ajouter-livre" element={<ParentComponent />} />
         <Route path="/modifier-livre/:id" element={<EditLivre />} />
         <Route
           path="/supprimer-livre/:id"
@@ -59,4 +61,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App; 
