@@ -1,15 +1,16 @@
-import React, { useState, useEffect  } from 'react';
+import React, { useState } from 'react';
 import '../styles/Navbar.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Link, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-
+import authService from '../services/authService'; // Importation du service auth
 
 const Navbar = () => {
   const [showUsersSubMenu, setShowUsersSubMenu] = useState(false);
   const [showEmpruntsSubMenu, setShowEmpruntsSubMenu] = useState(false);
 
-  const location = useLocation(); 
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const toggleUsersSubMenu = () => {
     setShowUsersSubMenu(!showUsersSubMenu);
@@ -19,12 +20,16 @@ const Navbar = () => {
     setShowEmpruntsSubMenu(!showEmpruntsSubMenu);
   };
 
-  const navigate = useNavigate(); // Remplacez useHistory() par useNavigate()
-
   const handleLogout = () => {
     localStorage.removeItem('access-token'); // Suppression du token
-    navigate('/login'); // Utilisez navigate pour rediriger vers la page de login
+    navigate('/login'); // Redirige vers la page de login
   };
+
+  // Vérification des rôles via le service auth
+  const isBibliothecaire = authService.isBibliothecaire();
+  const isEtudiant = authService.isEtudiant();
+  const isAdmin = authService.isAdminScope();
+  const isPersonnel = authService.isPersonnel();
 
   return (
     <div id="nav-bar">
@@ -36,74 +41,95 @@ const Navbar = () => {
       </div>
 
       <div id="nav-content">
-        {/* Gestion des utilisateurs avec sous-menu */}
-        <div
-          className="nav-button nav-button-management"
-          onClick={toggleUsersSubMenu}
-          aria-expanded={showUsersSubMenu}
-          aria-controls="users-sub-menu"
-        >
-          <i className="fas fa-users"></i>
-          <span>Utilisateurs</span>
-        </div>
-        {showUsersSubMenu && (
-          <div id="users-sub-menu" className="sub-menu">
-            <Link to="/gestion-etudiants" className="sub-menu-item">
-              <i className="fas fa-graduation-cap"></i> Étudiants
-            </Link>
-            <Link to="/gestion-Admin" className="sub-menu-item">
-              <i className="fas fa-user-shield"></i> Admins
-            </Link>
-            <Link to="/gestion-personnel" className="sub-menu-item">
-              <i className="fas fa-users-cog"></i> Personnel
-            </Link>
-          </div>
+        {/* Tableau de bord accessible uniquement aux Admins et Bibliothécaires */}
+        {(isAdmin || isBibliothecaire) && (
+          <Link to="/dashboard" className="nav-button nav-button-management">
+            <i className="fas fa-tachometer-alt"></i>
+            <span>Tableau de bord</span>
+          </Link>
         )}
 
-        {/* Gestion des emprunts avec sous-menu */}
-        <div
-          className="nav-button nav-button-management"
-          onClick={toggleEmpruntsSubMenu}
-          aria-expanded={showEmpruntsSubMenu}
-          aria-controls="emprunts-sub-menu"
-        >
-          <i className="fas fa-calendar-check"></i>
-          <span>Emprunts & réservations</span>
-        </div>
-        {showEmpruntsSubMenu && (
-          <div id="emprunts-sub-menu" className="sub-menu">
-            <Link to="/gestion-emprunts" className="sub-menu-item">
-              <i className="fas fa-book-reader"></i> Emprunts
+        {/* Admin : Accès */}
+        {isAdmin && (
+          <>
+            <Link to="/gestion-etudiants" className="nav-button nav-button-management">
+              <i className="fas fa-users"></i>
+              <span>Gestion Étudiants</span>
             </Link>
-            <Link to="/gestion-reservations" className="sub-menu-item">
-              <i className="fas fa-bookmark"></i> Réservations
+            <Link to="/gestion-personnel" className="nav-button nav-button-management">
+              <i className="fas fa-users-cog"></i>
+              <span>Gestion Personnel</span>
             </Link>
-          </div>
+            <Link to="/gestion-Admin" className="nav-button nav-button-management">
+              <i className="fas fa-user-shield"></i>
+              <span>Gestion Admins</span>
+            </Link>
+            <Link to="/gestion-bibliothecaires" className="nav-button nav-button-management">
+              <i className="fas fa-users-cog"></i>
+              <span>Gestion Bibliothécaires</span>
+            </Link>
+          </>
         )}
 
-        {/* Autres liens */}
-        <Link to="/gestion-livre" className="nav-button nav-button-management">
-          <i className="fas fa-book-open"></i>
-          <span>Livres</span>
-        </Link>
+        {/* Bibliothécaire : Accès à la gestion des livres, réservations, emprunts */}
+        {isBibliothecaire && (
+          <>
+            <Link to="/gestion-livre" className="nav-button nav-button-management">
+              <i className="fas fa-book-open"></i>
+              <span>Gestion des Livres</span>
+            </Link>
+            <Link to="/gestion-reservations" className="nav-button nav-button-management">
+              <i className="fas fa-bookmark"></i>
+              <span>Gestion des Réservations</span>
+            </Link>
+            <Link to="/gestion-emprunts" className="nav-button nav-button-management">
+              <i className="fas fa-calendar-check"></i>
+              <span>Gestion des Emprunts</span>
+            </Link>
+          </>
+        )}
 
-        <Link to="/dashboard" className="nav-button nav-button-management">
-          <i className="fas fa-tachometer-alt"></i>
-          <span>Tableau de bord</span>
-        </Link>
+        {/* Étudiant et Personnel : Accès au catalogue et à leurs emprunts */}
+        {(isEtudiant || isPersonnel) && (
+          <>
+          {/* Section Catalogue */}
+          <Link to="/user-interface" className="nav-button">
+            <i className="fas fa-book"></i>
+            <span>Catalogue</span>
+          </Link>
+           {/* Section Mes Emprunts */}
+           <Link to="/mes-reservations" className="nav-button">
+            <i className="fas fa-calendar-check"></i>
+            <span>Mes reservations</span>
+          </Link>
+          </>
+        )}
+
+        {/* Étudiant et Personnel : Accès au catalogue et à leurs emprunts */}
+        {(isBibliothecaire || isPersonnel || isEtudiant) && (
+          <>
+          {/* Section historique */}
+          <Link to="/historique" className="nav-button">
+           <i className="fas fa-history"></i>
+           <span>Historique</span>
+          </Link>
+          </>
+        )}
+
+        
       </div>
 
       <input id="nav-footer-toggle" type="checkbox" />
       <div id="nav-footer">
-        <Link to="/login" onClick={handleLogout} className="logout-button" 
+        <Link to="/login" onClick={handleLogout} className="logout-button"
           style={{
-            border: 'none',             
-            padding: '10px 20px',        
-            borderRadius: '5px',        
-            fontSize: '16px',            
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '5px',
+            fontSize: '16px',
           }}
         >
-       <i className="fas fa-sign-out-alt" style={{ color: '#f39c12' }}></i> 
+          <i className="fas fa-sign-out-alt" style={{ color: '#f39c12' }}></i>
           <span>Déconnexion</span>
         </Link>
       </div>

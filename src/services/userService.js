@@ -1,12 +1,13 @@
+import { isAdminScope, getToken } from "./authService";
+
 const API_BASE_URL = 'http://localhost:8080/api/utilisateur';
 
-const getToken = () => {
-    return localStorage.getItem('access-token');
-    
-};
-
 // Fonction générique pour récupérer les utilisateurs
-const getUsers = async (type) => {
+export const getUsers = async (type) => {
+    if (!isAdminScope()) {
+        console.error("Accès refusé : Seul un administrateur peut récupérer les utilisateurs.");
+        return [];
+    }
     try {
         const response = await fetch(`${API_BASE_URL}/${type}`, {
             headers: {
@@ -24,12 +25,16 @@ const getUsers = async (type) => {
 };
 
 // Fonction générique pour ajouter un utilisateur
-const addUser = async (type, utilisateur, password) => {
+export const addUser = async (type, utilisateur, password) => {
+    if (!isAdminScope()) {
+        throw new Error("Accès refusé : Seul un administrateur peut ajouter des utilisateurs.");
+    }
+    try {
         const response = await fetch(`${API_BASE_URL}/${type}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getToken()}`, // Ajoute le token dans les headers
+                Authorization: `Bearer ${getToken()}`,
                 'password': password,
             },
             body: JSON.stringify(utilisateur),
@@ -40,11 +45,17 @@ const addUser = async (type, utilisateur, password) => {
         }
 
         return await response.json();
-   
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 };
 
-
+// Fonction pour importer plusieurs utilisateurs
 export const addAllUsers = async (type, utilisateurs, passwords) => {
+    if (!isAdminScope()) {
+        throw new Error("Accès refusé : Seul un administrateur peut importer des utilisateurs.");
+    }
     try {
         const response = await fetch(`${API_BASE_URL}/save/list/${type}`, {
             method: 'POST',
@@ -64,7 +75,8 @@ export const addAllUsers = async (type, utilisateurs, passwords) => {
 };
 
 // Fonction générique pour mettre à jour un utilisateur
-const updateUser = async (type, id, updatedUserData) => {
+export const updateUser = async (type, id, updatedUserData) => {
+    
     try {
         const response = await fetch(`${API_BASE_URL}/${type}/${id}`, {
             method: 'PUT',
@@ -87,7 +99,10 @@ const updateUser = async (type, id, updatedUserData) => {
 };
 
 // Fonction générique pour supprimer un utilisateur
-const deleteUser = async (type, id) => {
+export const deleteUser = async (type, id) => {
+    if (!isAdminScope()) {
+        throw new Error("Accès refusé : Seul un administrateur peut supprimer un utilisateur.");
+    }
     try {
         const response = await fetch(`${API_BASE_URL}/${type}/${id}`, {
             method: 'DELETE',
@@ -104,7 +119,10 @@ const deleteUser = async (type, id) => {
 };
 
 // Fonction générique pour supprimer tous les utilisateurs
-const deleteAllUsers = async (type, ids) => {
+export const deleteAllUsers = async (type, ids) => {
+    if (!isAdminScope()) {
+        throw new Error("Accès refusé : Seul un administrateur peut supprimer des utilisateurs.");
+    }
     try {
         const response = await fetch(`${API_BASE_URL}/${type}/list`, {
             method: 'DELETE',
@@ -121,6 +139,27 @@ const deleteAllUsers = async (type, ids) => {
         console.error(`Erreur lors de la suppression des ${type}s:`, error);
     }
 };
+// Fonction générique pour récupérer un utilisateur par email
+export const getUserByEmail = async (email) => {
+    //non seulement pour les admin mais cette partie est pour tous les utilisateur de la bibliotheque la fonction 
+    //est pour recuperer les info dans le profil
+    try {
+        const response = await fetch(`${API_BASE_URL}/email/${email}`, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch user by email');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(`Error in getUserByEmail :`, error);
+        return null;
+    }
+};
+
 
 // Utilitaires pour capitaliser le nom du type d'utilisateur
 const capitalizeFirstLetter = (string) => {
@@ -134,4 +173,6 @@ export default {
     updateUser,
     deleteUser,
     deleteAllUsers,
+    getUserByEmail,
 };
+

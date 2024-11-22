@@ -1,30 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserBooks from './UserBooks';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/UserInterface.css';
-
-const booksData = [
-    { id: 1, title: 'Le Petit Prince', author: 'Antoine de Saint-Exupéry', category: 'Fiction', language: 'Français', available: true },
-    { id: 2, title: 'Les Misérables', author: 'Victor Hugo', category: 'Classique', language: 'Français', available: false },
-    { id: 3, title: 'Harry Potter', author: 'J.K. Rowling', category: 'Fantastique', language: 'Anglais', available: true },
-    { id: 4, title: 'Pride and Prejudice', author: 'Jane Austen', category: 'Classique', language: 'Anglais', available: true },
-    { id: 5, title: 'L\'Étranger', author: 'Albert Camus', category: 'Philosophie', language: 'Français', available: false },
-    { id: 6, title: 'Don Quixote', author: 'Miguel de Cervantes', category: 'Classique', language: 'Espagnol', available: true },
-    { id: 7, title: 'Moby Dick', author: 'Herman Melville', category: 'Aventure', language: 'Anglais', available: true },
-    { id: 8, title: 'War and Peace', author: 'Leo Tolstoy', category: 'Historique', language: 'Russe', available: false },
-    { id: 9, title: 'Les Fleurs du mal', author: 'Charles Baudelaire', category: 'Poésie', language: 'Français', available: true },
-    { id: 10, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', category: 'Classique', language: 'Anglais', available: true },
-    { id: 11, title: 'Cien años de soledad', author: 'Gabriel García Márquez', category: 'Fantastique', language: 'Espagnol', available: false },
-    { id: 12, title: 'Le Rouge et le Noir', author: 'Stendhal', category: 'Romance', language: 'Français', available: true },
-    { id: 13, title: 'The Catcher in the Rye', author: 'J.D. Salinger', category: 'Fiction', language: 'Anglais', available: true },
-    { id: 14, title: 'Le Comte de Monte-Cristo', author: 'Alexandre Dumas', category: 'Aventure', language: 'Français', available: false },
-    { id: 15, title: 'Jane Eyre', author: 'Charlotte Brontë', category: 'Romance', language: 'Anglais', available: true },
-    { id: 16, title: 'Anna Karenina', author: 'Leo Tolstoy', category: 'Classique', language: 'Russe', available: true },
-    { id: 17, title: 'Madame Bovary', author: 'Gustave Flaubert', category: 'Fiction', language: 'Français', available: false },
-    { id: 18, title: 'Crime and Punishment', author: 'Fyodor Dostoevsky', category: 'Philosophie', language: 'Russe', available: true },
-    { id: 19, title: 'Les Contemplations', author: 'Victor Hugo', category: 'Poésie', language: 'Français', available: true },
-    { id: 20, title: 'The Odyssey', author: 'Homer', category: 'Épopée', language: 'Grec ancien', available: false },
-];
+import documentService from '../services/documentService';
 
 const categories = ['Fiction', 'Classique', 'Fantastique', 'Philosophie', 'Aventure', 'Historique', 'Poésie'];
 const languages = ['Français', 'Anglais', 'Espagnol', 'Russe', 'Grec ancien'];
@@ -39,6 +17,21 @@ const UserInterface = () => {
     });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
+    const [documents, setDocuments] = useState([]);
+
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            try {
+                const fetchedDocuments = await documentService.getAllDocuments();
+                setDocuments(fetchedDocuments);
+            } catch (error) {
+                console.error('Failed to fetch documents:', error);
+            }
+        };
+
+        fetchDocuments();
+    }, []);
+
 
     const handleAvailabilityChange = () => {
         setFilters((prevFilters) => ({ ...prevFilters, availableOnly: !prevFilters.availableOnly }));
@@ -55,7 +48,7 @@ const UserInterface = () => {
         }));
     };
 
-    const filteredBooks = booksData.filter((book) => {
+    const filteredBooks = documents.filter((book) => {
         const matchesAvailability = !filters.availableOnly || book.available;
         const matchesKeywords = filters.keywords === '' || book.title.toLowerCase().includes(filters.keywords.toLowerCase()) || book.author.toLowerCase().includes(filters.keywords.toLowerCase());
         const matchesCategory = filters.category === '' || book.category === filters.category;

@@ -25,33 +25,34 @@ const UserBooks = ({ booksData }) => {
 const BookCard = ({ book }) => {
     const [showMore, setShowMore] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [reserveDate, setReserveDate] = useState(''); // Remplacer 'borrowDate' par 'reserveDate'
+    const [borrowDate, setBorrowDate] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
 
-    const handleReserveClick = () => {
+    const handleBorrowClick = () => {
         setShowModal(true);
     };
 
     const handleCloseModal = () => {
         setShowModal(false);
-        setReserveDate('');
+        setBorrowDate('');
         setShowSuccess(false);
     };
 
     const handleDateChange = (e) => {
-        setReserveDate(e.target.value);
+        setBorrowDate(e.target.value);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        console.log(`Demande de réservation pour le livre "${book.title}" le ${reserveDate}`);
+        // Simule l'envoi de la demande d'emprunt
+        console.log(`Demande d'emprunt pour le livre "${book.titre}" le ${borrowDate}`);
         
         // Affiche le message de succès dans la modale
         setShowSuccess(true);
         
         // Réinitialise le champ de date après la soumission
-        setReserveDate('');
+        setBorrowDate('');
         
         // Cache le message de succès et ferme la modale après 3 secondes
         setTimeout(() => {
@@ -63,21 +64,19 @@ const BookCard = ({ book }) => {
     return (
         <div className="col-md-4 mb-4">
             <div className="card h-100">
-                <img src={book.coverImage || defaultCoverImage} className="card-img-top" alt={book.title} />
+                <img src={book.coverImage || defaultCoverImage} className="card-img-top" alt={book.titre} />
                 <div className="card-body">
-                    <h5 className="card-title">{book.title}</h5>
-                    <p className="card-text"><strong>Auteur(s) :</strong> {Array.isArray(book.author) ? book.author.join(', ') : book.author}</p>
+                    <h5 className="card-title">{book.titre}</h5>
+                    <p className="card-text"><strong>Auteur(s) :</strong> {Array.isArray(book.auteurs) ? book.auteurs.join(', ') : book.auteurs}</p>
 
-                    <p className={`card-text ${book.available ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.8rem' }}>
+                    <p className={`card-text ${book.available ? 'text-success' : 'text-danger'}`}>
                         <strong>Disponibilité :</strong> {book.available ? 'Disponible' : 'Indisponible'}
                     </p>
 
-
-
                     {showMore && (
                         <>
-                            <p className="card-text"><strong>Catégorie :</strong> {book.category}</p>
-                            <p className="card-text"><strong>Langue :</strong> {book.language}</p>
+                            <p className="card-text"><strong>Sous-titres :</strong> {book.sousTitre}</p>
+                            <p className="card-text"><strong>Édition :</strong> {book.edition}</p>
                         </>
                     )}
 
@@ -93,38 +92,38 @@ const BookCard = ({ book }) => {
                         {book.available && (
                             <button
                                 className="btn btn-success"
-                                onClick={handleReserveClick}
+                                onClick={handleBorrowClick}
                             >
-                                Réserver {/* Texte mis à jour */}
+                                Emprunter
                             </button>
                         )}
                     </div>
 
-                    {/* Modal pour la demande de réservation */}
+                    {/* Modal pour la demande d'emprunt */}
                     <Modal show={showModal} onHide={handleCloseModal}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Demande de réservation</Modal.Title> {/* Titre mis à jour */}
+                            <Modal.Title>Demande d'emprunt</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             {showSuccess ? (
                                 // Message de succès après l'envoi de la demande
                                 <Alert variant="success" className="text-center">
-                                    <i className="bi bi-check-circle-fill"></i> Demande de réservation envoyée avec succès ! {/* Message mis à jour */}
+                                    <i className="bi bi-check-circle-fill"></i> Demande d'emprunt envoyée avec succès !
                                 </Alert>
                             ) : (
-                                // Formulaire de demande de réservation
+                                // Formulaire de demande d'emprunt
                                 <Form onSubmit={handleSubmit}>
-                                    <Form.Group controlId="reserveDate">
-                                        <Form.Label>Date de réservation</Form.Label> {/* Label mis à jour */}
+                                    <Form.Group controlId="borrowDate">
+                                        <Form.Label>Date d'emprunt</Form.Label>
                                         <Form.Control
                                             type="date"
-                                            value={reserveDate}
+                                            value={borrowDate}
                                             onChange={handleDateChange}
                                             required
                                         />
                                     </Form.Group>
                                     <Button variant="primary" type="submit" className="mt-3">
-                                        Envoyer la demande {/* Bouton mis à jour */}
+                                        Envoyer la demande
                                     </Button>
                                 </Form>
                             )}

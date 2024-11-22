@@ -1,42 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Profil.css';
+import authService from '../services/authService';
+import userService from '../services/userService';
 
 const Profil = () => {
   const [image, setImage] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isPasswordEditing, setIsPasswordEditing] = useState(false);
   const [imageChanged, setImageChanged] = useState(false);
   const [passwordChanged, setPasswordChanged] = useState(false);
-  const [cne, setCne] = useState('123456789'); // Exemple de CNE (non modifiable)
-  const [nom, setNom] = useState('VotreNom'); // Exemple de nom
-  const [prenom, setPrenom] = useState('VotrePrénom'); // Exemple de prénom
-  const [email, setEmail] = useState('test@example.com'); // Exemple d'email
+  const [code, setCode] = useState('');
+  const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
+  const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState(null);
+  const [storedPassword, setStoredPassword] = useState(''); // Mot de passe stocké dans la base de données
+
+  // Fonction pour charger les données utilisateur
+  const loadUserData = async () => {
+    const emailFromToken = authService.getEmailFromToken(); // Extraire l'email du token
+    setEmail(emailFromToken);
+
+    try {
+      const user = await userService.getUserByEmail(emailFromToken);
+      setNom(user.nom);
+      setPrenom(user.prenom);
+      setCode(user.code);
+      setUserId(user.id); // Stocker l'ID utilisateur pour les mises à jour
+      setStoredPassword(user.password); // Stocker le mot de passe actuel
+    } catch (error) {
+      setError("Impossible de récupérer les informations utilisateur.");
+    }
+  };
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImage(URL.createObjectURL(file));
-      setImageChanged(true); // Marquer l'image comme modifiée
+      setImageChanged(true);
     }
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (!oldPassword || !newPassword) {
       setError('Tous les champs de mot de passe doivent être remplis.');
-    } else {
+      return;
+    }
+
+    if (oldPassword !== storedPassword) {
+      setError("L'ancien mot de passe est incorrect.");
+      console.log("saisi : ",storedPassword);
+      console.log("old : ",oldPassword);
+      return;
+    }
+
+    try {
+      // Mettre à jour le mot de passe dans la base de données
+      await userService.updateUser('utilisateur', userId, { password: newPassword });
+
       setError('');
-      setPasswordChanged(true); // Marquer le mot de passe comme modifié
-      alert('Mot de passe mis à jour avec succès.');
-      setIsPasswordEditing(false); // Fermer la modification du mot de passe
+      setSuccess('Mot de passe mis à jour avec succès.');
+      setPasswordChanged(true);
+      setIsPasswordEditing(false);
+    } catch (error) {
+      setError('Une erreur est survenue lors de la mise à jour du mot de passe.');
     }
   };
 
   const handleSaveChanges = () => {
     if (imageChanged || passwordChanged) {
       alert('Changements enregistrés !');
-      // Implémenter la logique pour sauvegarder les changements ici
+      // Implémenter la logique pour sauvegarder les autres changements ici
     } else {
       alert('Aucun changement détecté.');
     }
@@ -65,7 +106,7 @@ const Profil = () => {
           </div>
         </div>
 
-        {/* Informations de l'utilisateur */}
+        {/* Informations utilisateur */}
         <div className="profil-item">
           <label className="profil-label">Nom :</label>
           <input
@@ -94,13 +135,11 @@ const Profil = () => {
           />
         </div>
 
-        
-
         <div className="profil-item">
-          <label className="profil-label">CNE :</label>
+          <label className="profil-label">Code :</label>
           <input
             type="text"
-            value={cne}
+            value={code}
             readOnly
             className="profil-input"
           />
@@ -142,10 +181,12 @@ const Profil = () => {
                 Sauvegarder le mot de passe
               </button>
             </div>
-            {/* Affichage des erreurs */}
-            {error && <p className="error-message">{error}</p>}
           </>
         )}
+
+        {/* Messages d'erreur ou de succès */}
+        {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
 
         {/* Bouton pour sauvegarder les modifications */}
         <div className="profil-item">

@@ -5,8 +5,7 @@ import GestionPersonnel from './pages/GestionPersonnel';
 import GestionAdmin from './pages/GestionAdmin';
 import GestionBibliothecaires from './pages/GestionBibliothecaires';
 import Login from './pages/LoginPage';
-import Navbar from './components/Navbar';
-import NavbarUser from './components/NavbarUser';
+import Navbar from './components/Navbar'; // Utilisation uniquement de Navbar
 import Header from './components/Header';
 import AjouterLivre from './components/AjouterLivre';
 import EditLivre from './components/EditLivre';
@@ -23,26 +22,17 @@ import MesReservations from './pages/MesReservations';
 
 const AppContent = ({ handleDelete }) => {
   const location = useLocation();
-  
-
 
   // Définir les routes spécifiques
   const hideNavbarAndHeaderRoutes = ['/login'];
-  const userNavbarRoutes = [
-    '/user-interface',
-    '/mes-reservations',
-    '/historique',
-  ];
 
   const shouldHideNavbarAndHeader = hideNavbarAndHeaderRoutes.includes(location.pathname);
-  const shouldShowUserNavbar = userNavbarRoutes.includes(location.pathname);
 
   return (
     <>
       {/* Header et Navbar conditionnels */}
       {!shouldHideNavbarAndHeader && <Header />}
-      {!shouldHideNavbarAndHeader &&
-        (shouldShowUserNavbar ? <NavbarUser /> : <Navbar />)}
+      {!shouldHideNavbarAndHeader && <Navbar />} {/* Navbar affichée pour toutes les pages sauf login */}
 
       {/* Contenu principal */}
       <div className="container mt-4">

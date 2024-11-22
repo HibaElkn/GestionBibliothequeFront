@@ -4,6 +4,7 @@ import '../styles/Login.css';
 import Login from '../assets/login.jpg';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../services/loginService'; // Importation du service
+import authService from '../services/authService';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -18,7 +19,20 @@ const LoginPage = () => {
             // Stocker le token dans le localStorage
             localStorage.setItem('access-token', data['access-token']);
             console.log(localStorage.setItem('access-token', data['access-token']));
-            navigate('/gestion-etudiants'); // Redirection après une connexion réussie
+            
+            if (authService.isAdminScope() || authService.isBibliothecaire()) {
+                // Si l'utilisateur est admin ou bibliothécaire, rediriger vers le tableau de bord
+                navigate('/dashboard');
+            } else if (authService.isEtudiant() || authService.isPersonnel()) {
+                // Si l'utilisateur est étudiant ou personnel, rediriger vers le catalogue
+                navigate('/user-interface');
+            } else {
+                setError("Rôle inconnu, veuillez contacter l'administrateur.");
+            }
+           
+
+
+
         } catch (error) {
             setError("Identifiants incorrects ou erreur de connexion. Veuillez réessayer.");
         }

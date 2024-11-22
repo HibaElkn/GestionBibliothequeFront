@@ -1,3 +1,5 @@
+import { isBibliothecaire, getToken } from "./authService"; // Importer les fonctions du authService
+
 const API_URL = 'http://localhost:8080/documents';
 
 const defaultHeaders = {
@@ -5,199 +7,166 @@ const defaultHeaders = {
     'Accept': '*/*'
 };
 
-const getToken = () => {
-    return localStorage.getItem('access-token');
-    
+// Fonction pour vérifier l'accès basé sur le rôle "BIBLIOTHECAIRE"
+const checkBibliothecaireAccess = () => {
+    if (!isBibliothecaire()) {
+        throw new Error("Accès refusé : rôle BIBLIOTHECAIRE requis.");
+    }
 };
 
 const documentService = {
-// Fetch all documents
-getAllDocuments: async () => {
-    try {
-        const response = await fetch(`${API_URL}`, {
-            method: 'GET',
-            headers: {
-                defaultHeaders,
-                Authorization: `Bearer ${getToken()}`
-            }
-        });
+    // Fetch all documents
+    getAllDocuments: async () => {
+       
+        try {
+            const response = await fetch(`${API_URL}`, {
+                method: 'GET',
+                headers: {
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
+                }
+            });
 
-        if (!response.ok) throw new Error('Failed to fetch documents');
-        
-        const data = await response.json();
-        
-        // Log the raw data fetched from the API (this is your original JSON)
-        console.log('Fetched Data:', JSON.stringify(data, null, 2));
+            if (!response.ok) throw new Error('Failed to fetch documents');
 
-        // Normalize the data to ensure 'auteur', 'descripteurs', and 'soustitre' are handled correctly
-        const normalizedData = data.map(doc => {
-            const { img, ...restOfDoc } = doc; // Destructure to ignore 'img' field
+            const data = await response.json();
 
-            return {
-                ...restOfDoc,
-                auteur: Array.isArray(doc.auteur) ? doc.auteur : (doc.auteur ? [doc.auteur] : []),  // Normalize 'auteur'
-                descripteurs: Array.isArray(doc.descripteurs) ? doc.descripteurs : (doc.descripteurs ? [doc.descripteurs] : []),  // Normalize 'descripteurs'
-                soustitre: doc.sousTitre && doc.sousTitre.trim() !== "" ? doc.sousTitre : "Non précisé",  // Correctly handle 'soustitre'
-            };
-        });
+            // Normalisation des données
+            const normalizedData = data.map(doc => {
+                const { img, ...restOfDoc } = doc; // Supprime le champ img
+                return {
+                    ...restOfDoc,
+                    auteur: Array.isArray(doc.auteur) ? doc.auteur : (doc.auteur ? [doc.auteur] : []),
+                    descripteurs: Array.isArray(doc.descripteurs) ? doc.descripteurs : (doc.descripteurs ? [doc.descripteurs] : []),
+                    soustitre: doc.sousTitre?.trim() || "Non précisé"
+                };
+            });
 
-        // Log the normalized data after processing
-        console.log('Normalized Data:', JSON.stringify(normalizedData, null, 2));
-
-        // Check the size of the data before storing in localStorage
-        const livresData = JSON.stringify(normalizedData);
-        console.log('Data size:', livresData.length);
-
-        // If the data is too large (greater than the localStorage quota), trim it
-        const maxSize = 5 * 1024 * 1024; // Approx 5MB
-        if (livresData.length > maxSize) {
-            console.warn('Data too large for localStorage. Trimming data...');
-            // Store only the first 50 documents (adjust the number as needed)
-            const limitedData = normalizedData.slice(0, 50);
-            localStorage.setItem('livres', JSON.stringify(limitedData));
-        } else {
-            // Otherwise, store the entire dataset
-            localStorage.setItem('livres', livresData);
+            // Enregistrement dans localStorage
+            localStorage.setItem('livres', JSON.stringify(normalizedData));
+            return normalizedData;
+        } catch (error) {
+            console.error('Error fetching documents:', error);
+            throw error;
         }
-
-        return normalizedData;
-    } catch (error) {
-        console.error('Error fetching documents:', error);
-        throw error;
-    }
-},
+    },
 
     // Save a single document
     saveDocument: async (documentData) => {
+        checkBibliothecaireAccess(); // Vérifier l'accès
+
         try {
-            // Log the token and data being sent
-            console.log('Token:', getToken());
-            console.log('Document Data:', documentData);
-    
             const response = await fetch(`${API_URL}/save`, {
                 method: 'POST',
                 headers: {
-                    ...defaultHeaders, // Correct header structure
-                    Authorization: `Bearer ${getToken()}` // Bearer token
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
                 },
-                body: JSON.stringify(documentData), // Correct JSON body
+                body: JSON.stringify(documentData)
             });
-    
+
             if (!response.ok) {
                 const errorResponse = await response.text();
-                console.error('Error response from backend:', errorResponse);
-                throw new Error(`Failed to save document: ${response.status}`);
+                throw new Error(`Failed to save document: ${errorResponse}`);
             }
-    
-            const data = await response.json();
-            console.log('Document saved successfully:', data);
-            return data;
+
+            return await response.json();
         } catch (error) {
-            console.error('Error saving document:', error.message);
+            console.error('Error saving document:', error);
             throw error;
         }
     },
-    
+
+    // Save multiple documents
     saveDocuments: async (documentsArray) => {
+        checkBibliothecaireAccess(); // Vérifier l'accès
+
         try {
-            // Log documents to be saved
-            console.log('Documents Array:', documentsArray);
-    
             const response = await fetch(`${API_URL}/saveAll`, {
                 method: 'POST',
                 headers: {
-                    ...defaultHeaders, // Correct header structure
-                    Authorization: `Bearer ${getToken()}` // Bearer token
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
                 },
-                body: JSON.stringify(documentsArray), // Correct JSON array
+                body: JSON.stringify(documentsArray)
             });
-    
+
             if (!response.ok) {
-                const errorText = await response.text(); // Log backend error response
-                console.error('Error from backend:', errorText);
-                throw new Error(`Failed to save documents: ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`Failed to save documents: ${errorText}`);
             }
-    
-            const data = await response.json();
-            console.log('Documents saved successfully:', data);
-            return data;
+
+            return await response.json();
         } catch (error) {
-            console.error('Error saving documents:', error.message);
+            console.error('Error saving documents:', error);
             throw error;
         }
     },
-       
+
     // Change document status
     changeDocumentStatus: async (id, newStatut) => {
+        checkBibliothecaireAccess(); // Vérifier l'accès
+
         try {
-            // Log inputs
-            console.log('Changing document status for ID:', id, 'to newStatut:', newStatut);
-    
             const response = await fetch(`${API_URL}/changeStatus/${id}?newStatut=${newStatut}`, {
                 method: 'PUT',
                 headers: {
-                    ...defaultHeaders, // Correct header structure
-                    Authorization: `Bearer ${getToken()}` // Bearer token
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
                 }
             });
-    
+
             if (!response.ok) {
-                const errorText = await response.text(); // Log backend error response
-                console.error('Error from backend:', errorText);
-                throw new Error(`Failed to change document status: ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`Failed to change document status: ${errorText}`);
             }
-    
-            const data = await response.json();
-            console.log('Document status changed successfully:', data);
-            return data;
+
+            return await response.json();
         } catch (error) {
-            console.error('Error changing document status:', error.message);
+            console.error('Error changing document status:', error);
             throw error;
         }
     },
-    
 
     // Update a document
     updateDocument: async (id, documentData) => {
+        checkBibliothecaireAccess(); // Vérifier l'accès
+
         try {
-            // Log inputs
-            console.log('Updating document with ID:', id, 'with data:', documentData);
-    
             const response = await fetch(`${API_URL}/update/${id}`, {
                 method: 'PUT',
                 headers: {
-                    ...defaultHeaders, // Correct header structure
-                    Authorization: `Bearer ${getToken()}` // Bearer token
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
                 },
-                body: JSON.stringify(documentData), // Correct JSON body
+                body: JSON.stringify(documentData)
             });
-    
+
             if (!response.ok) {
-                const errorText = await response.text(); // Log backend error response
-                console.error('Error from backend:', errorText);
-                throw new Error(`Failed to update document: ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`Failed to update document: ${errorText}`);
             }
-    
-            const data = await response.json();
-            console.log('Document updated successfully:', data);
-            return data;
+
+            return await response.json();
         } catch (error) {
-            console.error('Error updating document:', error.message);
+            console.error('Error updating document:', error);
             throw error;
         }
     },
-    
 
     // Delete a document
     deleteDocument: async (id) => {
+        checkBibliothecaireAccess(); // Vérifier l'accès
+
         try {
             const response = await fetch(`${API_URL}/delete/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    defaultHeaders,
+                    ...defaultHeaders,
                     Authorization: `Bearer ${getToken()}`
-                },
+                }
             });
+
             if (!response.ok) throw new Error('Failed to delete document');
             return true;
         } catch (error) {
