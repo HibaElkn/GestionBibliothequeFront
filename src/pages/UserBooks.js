@@ -1,18 +1,46 @@
-// components/UserBooks.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Alert } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/UserBooks.css';
+import { getEmailFromToken} from '../services/authService';
+import { getUserByEmail } from '../services/userService';
+import { createReservation } from '../services/reservationService';
 
 const defaultCoverImage = 'https://via.placeholder.com/150';
 
 const UserBooks = ({ booksData }) => {
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const email = getEmailFromToken();
+                if (!email) {
+                    console.error("Aucun email trouvé dans le token.");
+                    return;
+                }
+
+                const user = await getUserByEmail(email);
+                if (user) {
+                    setUserId(user.id);
+                    
+                } else {
+                    console.error("Utilisateur non trouvé.");
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération de l'utilisateur connecté :", error);
+            }
+        };
+
+        fetchUser();
+    }, []);
+
     return (
         <div className="books-section">
             <div className="row">
                 {booksData.length > 0 ? (
                     booksData.map((book) => (
-                        <BookCard key={book.id} book={book} />
+                        <BookCard key={book.id} book={book} userId={userId} />
                     ))
                 ) : (
                     <p className="text-center">Aucun livre trouvé pour cette catégorie.</p>
@@ -22,7 +50,7 @@ const UserBooks = ({ booksData }) => {
     );
 };
 
-const BookCard = ({ book }) => {
+const BookCard = ({ book, userId }) => {
     const [showMore, setShowMore] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [borrowDate, setBorrowDate] = useState('');
@@ -42,24 +70,37 @@ const BookCard = ({ book }) => {
         setBorrowDate(e.target.value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Simule l'envoi de la demande d'emprunt
-        console.log(`Demande d'emprunt pour le livre "${book.titre}" le ${borrowDate}`);
-        
-        // Affiche le message de succès dans la modale
-        setShowSuccess(true);
-        
-        // Réinitialise le champ de date après la soumission
-        setBorrowDate('');
-        
-        // Cache le message de succès et ferme la modale après 3 secondes
-        setTimeout(() => {
-            setShowSuccess(false);
-            setShowModal(false);
-        }, 3000);
+    
+        // Créez une réservation en liant l'utilisateur et le livre
+        const reservation = {
+            utilisateurId: userId, // ID de l'utilisateur connecté
+            documentId: book.id, // ID du livre
+            dateReservation: borrowDate, // Date choisie
+        };
+    
+        try {
+            // Utiliser le service pour envoyer la demande de réservation
+            await createReservation(reservation);
+    
+            // Afficher le message de succès après la réussite
+            setShowSuccess(true);
+    
+            // Réinitialise le champ de date après la soumission
+            setBorrowDate('');
+    
+            // Cache le message de succès et ferme la modale après 3 secondes
+            setTimeout(() => {
+                setShowSuccess(false);
+                setShowModal(false);
+            }, 3000);
+        } catch (error) {
+            console.error('Erreur lors de la réservation :', error);
+            alert('Une erreur est survenue. Veuillez réessayer.');
+        }
     };
+    
 
     return (
         <div className="col-md-4 mb-4">
@@ -69,8 +110,8 @@ const BookCard = ({ book }) => {
                     <h5 className="card-title">{book.titre}</h5>
                     <p className="card-text"><strong>Auteur(s) :</strong> {Array.isArray(book.auteurs) ? book.auteurs.join(', ') : book.auteurs}</p>
 
-                    <p className={`card-text ${book.available ? 'text-success' : 'text-danger'}`}>
-                        <strong>Disponibilité :</strong> {book.available ? 'Disponible' : 'Indisponible'}
+                    <p className={`card-text ${book.statut ? 'text-success' : 'text-danger'}`}>
+                        <strong>Disponibilité :</strong> {book.statut ? 'Disponible' : 'Indisponible'}
                     </p>
 
                     {showMore && (
@@ -80,7 +121,6 @@ const BookCard = ({ book }) => {
                         </>
                     )}
 
-                    {/* Conteneur pour les boutons avec flexbox */}
                     <div className="button-container mt-2">
                         <button
                             className="btn btn-see"
@@ -89,29 +129,26 @@ const BookCard = ({ book }) => {
                             {showMore ? 'Voir moins' : 'Voir plus'}
                         </button>
 
-                        {book.available && (
+                        {book.statut && (
                             <button
                                 className="btn btn-success"
                                 onClick={handleBorrowClick}
                             >
-                                Emprunter
+                                Reserver
                             </button>
                         )}
                     </div>
 
-                    {/* Modal pour la demande d'emprunt */}
                     <Modal show={showModal} onHide={handleCloseModal}>
                         <Modal.Header closeButton>
                             <Modal.Title>Demande d'emprunt</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             {showSuccess ? (
-                                // Message de succès après l'envoi de la demande
                                 <Alert variant="success" className="text-center">
                                     <i className="bi bi-check-circle-fill"></i> Demande d'emprunt envoyée avec succès !
                                 </Alert>
                             ) : (
-                                // Formulaire de demande d'emprunt
                                 <Form onSubmit={handleSubmit}>
                                     <Form.Group controlId="borrowDate">
                                         <Form.Label>Date d'emprunt</Form.Label>

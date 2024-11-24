@@ -69,8 +69,7 @@ const MesResrvations = ({ onDeleteReservation }) => {
                 <table className="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>CNE / Num de Som</th>
-                            <th>Nom et Prénom</th>
+                            
                             <th>Titre du Livre</th>
                             <th>Date de réservation</th>
                             <th>Statut</th>
@@ -80,8 +79,7 @@ const MesResrvations = ({ onDeleteReservation }) => {
                     <tbody>
                         {currentItems.map(reservation => (
                             <tr key={reservation.id}>
-                                <td>{reservation.cne} / {reservation.numSom}</td>
-                                <td>{reservation.nomPrenom}</td>
+                                
                                 <td>{reservation.titreLivre}</td>
                                 <td>{reservation.dateReservation}</td>
                                 <td>
