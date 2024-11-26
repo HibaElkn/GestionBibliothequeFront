@@ -50,6 +50,42 @@ const documentService = {
             throw error;
         }
     },
+    getDocumentById: async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: 'GET',
+                headers: {
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
+                }
+            });
+    
+            if (!response.ok) throw new Error('Failed to fetch document');
+    
+            const data = await response.json();
+    
+            // Normalisation des données
+            const normalizedData = {
+                ...data,
+                // Assurez-vous que 'auteur' est toujours un tableau
+                auteur: Array.isArray(data.auteur) ? data.auteur : (data.auteur ? [data.auteur] : []),
+                // Vous pouvez également vérifier si les auteurs sont séparés par des virgules et les transformer en tableau
+                // Exemple si l'auteur est une chaîne de caractères comme "John, Doe"
+                auteur: typeof data.auteur === 'string' ? data.auteur.split(',').map(a => a.trim()) : data.auteur,
+                descripteurs: Array.isArray(data.descripteurs) ? data.descripteurs : (data.descripteurs ? [data.descripteurs] : []),
+                soustitre: data.sousTitre?.trim() || "Non précisé"
+            };
+    
+            return normalizedData;
+        } catch (error) {
+            console.error('Error fetching document by ID:', error);
+            throw error;
+        }
+    },
+    
+  
+    
+     
 
     // Save a single document
     saveDocument: async (documentData) => {

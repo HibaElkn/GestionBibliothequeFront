@@ -21,15 +21,38 @@ const EditLivre = () => {
   useEffect(() => {
     const fetchLivre = async () => {
       try {
-        const response = await documentService.getDocumentById(id);
-        setLivre(response);
+        const response = await documentService.getDocumentById(id); // Appel pour récupérer le livre
+        console.log('Réponse complète:', response); // Afficher l'objet complet de la réponse dans la console pour débogage
+  
+        if (response) {
+          // Vérifier si 'auteurs' existe et est un tableau, sinon le définir comme une chaîne vide
+          const auteurs = response.auteurs && Array.isArray(response.auteurs) ? response.auteurs.join(', ') : '';
+          
+          // Vérifier si 'descripteurs' existe et est un tableau, sinon le définir comme une chaîne vide
+          const descripteurs = response.descripteurs && Array.isArray(response.descripteurs) ? response.descripteurs.join(', ') : '';
+  
+          console.log('Auteurs:', auteurs); // Afficher les auteurs
+          console.log('Descripteurs:', descripteurs); // Afficher les descripteurs
+  
+          setLivre({
+            ...response,
+            auteur: auteurs, // Affecter les auteurs sous forme de chaîne
+            descripteurs: descripteurs, // Affecter les descripteurs sous forme de chaîne
+          });
+        } else {
+          setErreur('Livre non trouvé');
+        }
       } catch (error) {
-        setErreur('Livre non trouvé');
+        setErreur(`Une erreur est survenue lors de la récupération du livre: ${error.message}`);
+        console.error('Erreur lors de la récupération du livre :', error); // Afficher l'erreur complète dans la console
       }
     };
-    fetchLivre();
+  
+    if (id) {
+      fetchLivre(); // Appeler la fonction si l'ID est défini
+    }
   }, [id]);
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLivre({ ...livre, [name]: value });
@@ -38,47 +61,45 @@ const EditLivre = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Validate that fields are not empty
+      // Vérifier que l'auteur et le titre ne sont pas vides
       if (!livre.auteur || !livre.titre) {
         setErreur("L'auteur et le titre sont obligatoires.");
         return;
       }
-      
-      // Log for debugging
-      console.log('Auteur:', livre.auteur);
-      console.log('Titre:', livre.titre);
-      
+
+      // Convertir la chaîne d'auteurs en un tableau (séparé par des virgules)
+      const auteursArray = livre.auteur.split(',').map(auteur => auteur.trim());
+
       const documentData = {
-        auteurs: [livre.auteur],  // Ensure it is an array
+        auteurs: auteursArray,  // Assurez-vous d'envoyer un tableau d'auteurs
         titre: livre.titre,
         sousTitre: livre.soustitre,
         edition: livre.edition,
         cote1: livre.cote1,
         cote2: livre.cote2,
-        descripteurs: livre.descripteurs.split(',').map(d => d.trim()), // Assuming descripteurs is a comma-separated string
+        descripteurs: livre.descripteurs.split(',').map(d => d.trim()), // Idem pour les descripteurs
         statut: "EXIST", 
-        img: "base64EncodedImageHere" // Dynamic image if needed
+        img: "base64EncodedImageHere" // Dynamique si nécessaire
       };
-      
-      console.log('Document Data:', documentData);  // Log the document data again for confirmation
-      
+
+      console.log('Document Data:', documentData);  // Vérifier les données envoyées
+
       await documentService.updateDocument(id, documentData);
-      setConfirmationVisible(true);
+      setConfirmationVisible(true);  // Afficher la confirmation
     } catch (error) {
       setErreur('Une erreur est survenue lors de la mise à jour');
-      console.error('Error updating document:', error);
+      console.error('Erreur lors de la mise à jour du document:', error);
     }
   };
-  
 
   const handleCancel = () => {
-    navigate('/livres'); // Rediriger vers la page des livres
+    navigate('/gestion-livre'); // Rediriger vers la page des livres
   };
 
   const handleConfirmationClose = () => {
     setConfirmationVisible(false);
     navigate('/gestion-livre'); // Redirect to the desired route after confirmation
-};
+  };
 
   return (
     <div className="modifier-livre-container">
