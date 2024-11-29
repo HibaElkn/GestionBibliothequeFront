@@ -17,9 +17,8 @@ const Profil = () => {
   const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
   const [userId, setUserId] = useState(null);
-  const [storedPassword, setStoredPassword] = useState(''); // Mot de passe stocké dans la base de données
 
-  // Fonction pour charger les données utilisateur
+  // Charger les données utilisateur
   const loadUserData = async () => {
     const emailFromToken = authService.getEmailFromToken(); // Extraire l'email du token
     setEmail(emailFromToken);
@@ -30,7 +29,6 @@ const Profil = () => {
       setPrenom(user.prenom);
       setCode(user.code);
       setUserId(user.id); // Stocker l'ID utilisateur pour les mises à jour
-      setStoredPassword(user.password); // Stocker le mot de passe actuel
     } catch (error) {
       setError("Impossible de récupérer les informations utilisateur.");
     }
@@ -54,16 +52,9 @@ const Profil = () => {
       return;
     }
 
-    if (oldPassword !== storedPassword) {
-      setError("L'ancien mot de passe est incorrect.");
-      console.log("saisi : ",storedPassword);
-      console.log("old : ",oldPassword);
-      return;
-    }
-
     try {
-      // Mettre à jour le mot de passe dans la base de données
-      await userService.updateUser('utilisateur', userId, { password: newPassword });
+      // Appel de l'API pour changer le mot de passe
+      await userService.changeUserPassword(userId, newPassword);
 
       setError('');
       setSuccess('Mot de passe mis à jour avec succès.');
@@ -109,40 +100,20 @@ const Profil = () => {
         {/* Informations utilisateur */}
         <div className="profil-item">
           <label className="profil-label">Nom :</label>
-          <input
-            type="text"
-            value={nom}
-            readOnly
-            className="profil-input"
-          />
+          <input type="text" value={nom} readOnly className="profil-input" />
         </div>
         <div className="profil-item">
           <label className="profil-label">Prénom :</label>
-          <input
-            type="text"
-            value={prenom}
-            readOnly
-            className="profil-input"
-          />
+          <input type="text" value={prenom} readOnly className="profil-input" />
         </div>
         <div className="profil-item">
           <label className="profil-label">Email :</label>
-          <input
-            type="text"
-            value={email}
-            readOnly
-            className="profil-input"
-          />
+          <input type="text" value={email} readOnly className="profil-input" />
         </div>
 
         <div className="profil-item">
           <label className="profil-label">Code :</label>
-          <input
-            type="text"
-            value={code}
-            readOnly
-            className="profil-input"
-          />
+          <input type="text" value={code} readOnly className="profil-input" />
         </div>
 
         {/* Modifier le mot de passe */}

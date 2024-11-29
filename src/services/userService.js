@@ -160,6 +160,32 @@ export const getUserByEmail = async (email) => {
     }
 };
 
+// Fonction pour changer le mot de passe d'un utilisateur
+export const changeUserPassword = async (id, newPassword) => {
+    if (!isAdminScope()) {
+        throw new Error("Accès refusé : Seul un administrateur peut changer le mot de passe d'un utilisateur.");
+    }
+    try {
+        const response = await fetch(`${API_BASE_URL}/password/${id}`, {
+            method: 'PUT',
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'newPassword': newPassword, // Utilisation du header pour transmettre le nouveau mot de passe
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Erreur lors du changement du mot de passe.");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`Erreur lors de la mise à jour du mot de passe pour l'utilisateur avec ID ${id}:`, error);
+        throw error;
+    }
+};
+
+
 
 // Utilitaires pour capitaliser le nom du type d'utilisateur
 const capitalizeFirstLetter = (string) => {
@@ -174,5 +200,6 @@ export default {
     deleteUser,
     deleteAllUsers,
     getUserByEmail,
+    changeUserPassword,
 };
 
