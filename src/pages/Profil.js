@@ -48,22 +48,39 @@ const Profil = () => {
 
   const handlePasswordChange = async () => {
     if (!oldPassword || !newPassword) {
-      setError('Tous les champs de mot de passe doivent être remplis.');
-      return;
+        setError('Tous les champs de mot de passe doivent être remplis.');
+        return;
     }
 
     try {
-      // Appel de l'API pour changer le mot de passe
-      await userService.changeUserPassword(userId, newPassword);
+        // Récupérer le mot de passe encodé du local storage
+        const encodedPassword = localStorage.getItem("encodedPassword");
 
-      setError('');
-      setSuccess('Mot de passe mis à jour avec succès.');
-      setPasswordChanged(true);
-      setIsPasswordEditing(false);
+        // Décoder le mot de passe
+        const decodedPassword = atob(encodedPassword);
+
+        // Vérifier si l'ancien mot de passe correspond
+        if (oldPassword !== decodedPassword) {
+            setError("L'ancien mot de passe est incorrect.");
+            return;
+        }
+
+        // Appel de l'API pour changer le mot de passe
+        await userService.changeUserPassword(userId, newPassword);
+
+        // Mettre à jour le mot de passe dans le local storage
+        const newEncodedPassword = btoa(newPassword);
+        localStorage.setItem("encodedPassword", newEncodedPassword);
+
+        setError('');
+        setSuccess('Mot de passe mis à jour avec succès.');
+        setPasswordChanged(true);
+        setIsPasswordEditing(false);
     } catch (error) {
-      setError('Une erreur est survenue lors de la mise à jour du mot de passe.');
+        setError('Une erreur est survenue lors de la mise à jour du mot de passe.');
     }
-  };
+};
+
 
   const handleSaveChanges = () => {
     if (imageChanged || passwordChanged) {
