@@ -19,22 +19,25 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
     useEffect(() => {
         const getDocuments = async () => {
             try {
-                const documents = await documentService.getAllDocuments(); // Fetch documents from the service
-                setTableData(documents);  // Update table data with fetched documents
+                setLoading(true);  
+                const documents = await documentService.getAllDocuments();  
+                setTableData(documents);  
+    
+           
                 if (onAddBooks) {
-                    onAddBooks(documents);  // Add books if the onAddBooks function is provided
+                    onAddBooks(documents);
                 }
-                setLoading(false);  // Turn off loading
             } catch (err) {
                 console.error("Error fetching documents:", err);
                 setError("Failed to load documents.");
-                setLoading(false);
+            } finally {
+                setLoading(false);  
             }
         };
-        getDocuments();  // Call the fetch function
-    }, [onAddBooks]);  // Dependency array ensures it runs on component mount
-
-    // Pagination logic
+    
+        getDocuments();  
+    }, []);  
+    
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
@@ -56,89 +59,101 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
     };
 
     // Handle delete selected items
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async () => {
         if (window.confirm("Êtes-vous sûr de vouloir supprimer les éléments sélectionnés ?")) {
-            // Send the delete request to the backend
-            if (onDeleteSelected) {
-                onDeleteSelected(selectedItems) // Call onDeleteSelected to delete the selected documents
-                    .then(() => {
-                        // Update the table state to remove deleted items
-                        setTableData(prevData => prevData.filter(item => !selectedItems.includes(item.id)));
-                        setSelectedItems([]); // Clear selected items after deletion
-                    })
-                    .catch(error => {
-                        console.error("Error deleting selected documents:", error);
-                        alert("Erreur lors de la suppression des livres sélectionnés.");
-                    });
-            } else {
-                console.error('onDeleteSelected function is not defined');
+            try {
+                // Make the API call to delete selected items
+                await documentService.deleteDocuments(selectedItems);
+    
+                // Update the table data by filtering out deleted items
+                setTableData(prevData => prevData.filter(item => !selectedItems.includes(item.id)));
+    
+                // Clear selected items
+                setSelectedItems([]);
+            } catch (error) {
+                console.error("Error deleting selected documents:", error);
+                alert("Erreur lors de la suppression des livres sélectionnés.");
             }
         }
     };
+    
 
     // Handle file change for importing data
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0]); // Set the selected file when it changes
     };
+    const handleDelete = async (id) => {
+        try {
+            // Delete the document via the service
+            await documentService.deleteDocument(id);
+
+            // Update the tableData state to remove the deleted item
+            setTableData((prevData) => prevData.filter((item) => item.id !== id));
+
+            alert("Document supprimé avec succès.");
+        } catch (error) {
+            console.error("Error deleting document:", error);
+            alert("Erreur lors de la suppression du document.");
+        }
+    };
 
     const handleImport = () => {
         if (selectedFile) {
             const reader = new FileReader();
-
+    
             reader.onload = (e) => {
                 const data = e.target.result;
                 const workbook = XLSX.read(data, { type: 'binary' });
-
+    
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
-
+    
                 const jsonData = XLSX.utils.sheet_to_json(sheet);
-                console.log('Raw Imported JSON Data:', jsonData);  // Log raw data
-
-                // Map the raw data to match the expected format
+                console.log('Raw Imported JSON Data:', jsonData);
+    
                 const cleanedData = jsonData.map(item => {
-                    // Trim the keys to ensure no leading/trailing spaces
                     const trimmedItem = {};
                     for (let key in item) {
                         if (item.hasOwnProperty(key)) {
-                            const trimmedKey = key.trim();  // Trim spaces from the key
-                            trimmedItem[trimmedKey] = item[key];  // Assign the value to the trimmed key
+                            const trimmedKey = key.trim();
+                            trimmedItem[trimmedKey] = item[key];
                         }
                     }
-
-                    const sousTitre = trimmedItem['Sous titre'] || '';  // Ensure sousTitre is assigned as a string
-                    console.log('Mapped sousTitre:', sousTitre);  // Log the value of sousTitre
-
+    
+                    const sousTitre = trimmedItem['Sous titre'] || '';
                     return {
                         auteurs: trimmedItem['AUTEUR(S)'] ? trimmedItem['AUTEUR(S)'].split(',').map(author => author.trim()) : [],
                         titre: trimmedItem['TITRE(S)'] || '',
-                        sousTitre: sousTitre,  // Directly store sousTitre as a normal field
+                        sousTitre: sousTitre,
                         edition: trimmedItem['Edition'] || '',
                         cote1: trimmedItem['Cote1'] || '',
                         cote2: trimmedItem['Cote2'] || '',
                         descripteurs: trimmedItem['Descripteurs'] ? trimmedItem['Descripteurs'].split('/').map(descriptor => descriptor.trim()) : [],
                         statut: 'EXIST',
-                        img: 'base64EncodedImageHere'  // Replace with actual base64 image or logic to fetch image
+                        img: 'base64EncodedImageHere'
                     };
                 });
-
-                console.log('Cleaned Data:', cleanedData);  // Log cleaned data
-
-                // Send the data to the backend
+    
+                console.log('Cleaned Data:', cleanedData);
+    
                 documentService.saveDocuments(cleanedData)
                     .then(response => {
                         console.log('Documents successfully saved:', response);
-                        setShowImportPopup(false);
+    
+                        // Mise à jour de l'état tableData pour inclure les nouveaux documents
+                        setTableData(prevData => [...prevData, ...cleanedData]);
+    
+                        setShowImportPopup(false); // Fermez la popup
                     })
                     .catch(error => {
                         console.error('Error saving documents:', error);
                     });
             };
-
+    
             reader.readAsBinaryString(selectedFile);
         }
     };
-
+    
     // Show loading or error messages if necessary
     if (loading) {
         return <div>Loading...</div>;
@@ -253,7 +268,7 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                         color: '#dc3545',  // Icône rouge
                     
                     }}
-                    onClick={() => onDelete(item.id)}  // onDelete is passed as a prop
+                    onClick={() => handleDelete(item.id)}
                 >
             <i className="fas fa-trash-alt"></i>
         </button>

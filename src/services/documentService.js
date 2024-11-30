@@ -209,7 +209,32 @@ const documentService = {
             console.error('Error deleting document:', error);
             throw error;
         }
-    }
+    },
+    deleteDocuments: async (ids) => {
+        checkBibliothecaireAccess();
+    
+        try {
+            const response = await fetch(`${API_URL}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
+                },
+                body: JSON.stringify(ids)
+            });
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to delete documents: ${errorText}`);
+            }
+    
+            return true;
+        } catch (error) {
+            console.error('Error deleting documents:', error);
+            throw error;
+        }
+    },    
+    
 };
 
 export default documentService;
