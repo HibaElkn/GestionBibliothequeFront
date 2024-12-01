@@ -1,92 +1,101 @@
-// components/Emprunts.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'font-awesome/css/font-awesome.min.css';
 import '../styles/Emprunts.css';
+import { getAllReservations } from '../services/reservationService';
+import documentService from '../services/documentService'; 
+import userService from '../services/userService'; 
+import axios from 'axios';  // Add axios for HTTP requests
 
-const Emprunts = ({ empruntsData = [], onDeleteEmprunt, onAddEmprunt }) => { 
+const GestionEmprunts = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
-    const [showAddEmpruntPopup, setShowAddEmpruntPopup] = useState(false);
-    const [newEmprunt, setNewEmprunt] = useState({
-        cne: '',
-        numSom: '',
-        nomPrenom: '',
-        titreLivre: '',
-        dateEmprunt: '',
-    });
+    const [reservationsData, setReservationsData] = useState([]);
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = Array.isArray(empruntsData) ? empruntsData.slice(indexOfFirstItem, indexOfLastItem) : [];
-    const totalPages = Math.ceil(empruntsData.length / itemsPerPage);
+    useEffect(() => {
+        const fetchReservations = async () => {
+            try {
+                const data = await getAllReservations();
+                const reservationsWithDetails = await Promise.all(
+                    data.map(async (reservation) => {
+                        const document = await documentService.getDocumentById(reservation.documentId);
+                        const user = await userService.getUserById(reservation.utilisateurId);
+                        return {
+                            ...reservation,
+                            titreDocument: document.titre || "Titre non disponible", 
+                            code: user?.code || "code non disponible", 
+                            nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible", 
+                        };
+                    })
+                );
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+                const filteredReservations = reservationsWithDetails.filter(reservation => reservation.reservationStatus === 'ACCEPTED');
+                setReservationsData(filteredReservations);
 
-    const handleDeleteEmprunt = (id) => {
-        if (window.confirm("Êtes-vous sûr de vouloir supprimer cet emprunt ?")) {
-            onDeleteEmprunt(id);
+                // Send filtered data to backend
+                sendFilteredDataToBackend(filteredReservations);
+            } catch (error) {
+                console.error('Error fetching reservations:', error);
+            }
+        };
+
+        fetchReservations();
+    }, []);
+
+    // Function to send filtered reservations to backend
+    const sendFilteredDataToBackend = async (filteredReservations) => {
+        try {
+            await axios.post('/api/emprunts/saveFiltered', filteredReservations);
+            console.log("Filtered data saved successfully");
+        } catch (error) {
+            console.error("Error saving filtered data:", error);
         }
     };
 
-    const handleAddEmpruntChange = (e) => {
-        setNewEmprunt({ ...newEmprunt, [e.target.name]: e.target.value });
-    };
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = reservationsData.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(reservationsData.length / itemsPerPage);
 
-    const handleAddEmpruntSubmit = () => {
-        onAddEmprunt(newEmprunt); // Appel à la fonction d'ajout
-        setShowAddEmpruntPopup(false); // Ferme la popup
-        setNewEmprunt({
-            cne: '',
-            numSom: '',
-            nomPrenom: '',
-            titreLivre: '',
-            dateEmprunt: '',
-        }); // Réinitialise le formulaire
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const getStatutClass = (statut) => {
+        switch (statut) {
+            case 'ACCEPTED':
+                return 'bg-success text-white';
+            case 'ENCOURS':
+                return 'bg-warning text-dark';
+            case 'REJECTED':
+                return 'bg-danger text-white';
+            default:
+                return '';
+        }
     };
 
     return (
         <div className="container">
-            <div className="d-flex justify-content-end mb-3"> 
-            <button 
-                onClick={() => setShowAddEmpruntPopup(true)} 
-                className="btn ml-auto" 
-                style={{
-                    backgroundColor: '#D99A22', 
-                    color: '/#004079ff',           
-                    border: '1px solid #D99A22', 
-                    padding: '10px 20px',       
-                    borderRadius: '5px',        
-                }}>
-                <i className="fas fa-plus"></i> Ajouter un emprunt
-            </button>
-
-</div>
-
             <div className="table-wrapper">
                 <table className="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>CNE / Num de Som</th>
+                            <th>Code</th>
                             <th>Nom et Prénom</th>
                             <th>Titre du Livre</th>
-                            <th>Date d'Emprunt</th>
-                            <th>Actions</th>
+                            <th>Date de réservation</th>
+                            <th>Statut</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {currentItems.map(emprunt => (
-                            <tr key={emprunt.id}>
-                                <td>{emprunt.cne} / {emprunt.numSom}</td>
-                                <td>{emprunt.nomPrenom}</td>
-                                <td>{emprunt.titreLivre}</td>
-                                <td>{emprunt.dateEmprunt}</td>
+                        {currentItems.map(reservation => (
+                            <tr key={reservation.id}>
+                                <td>{reservation.code}</td>
+                                <td>{reservation.nomPrenom}</td>
+                                <td>{reservation.titreDocument}</td>
+                                <td>{reservation.dateReservation}</td>
                                 <td>
-                                    <button 
-                                        onClick={() => handleDeleteEmprunt(emprunt.id)} 
-                                        className="btn btn-sm" 
-                                        style={{ color: 'red' }}>
-                                        <i className="fas fa-trash-alt"></i>
-                                    </button>
+                                    <span className={`badge ${getStatutClass(reservation.reservationStatus)} rounded-3`}>
+                                        {reservation.reservationStatus}
+                                    </span>
                                 </td>
                             </tr>
                         ))}
@@ -109,23 +118,8 @@ const Emprunts = ({ empruntsData = [], onDeleteEmprunt, onAddEmprunt }) => {
                     </ul>
                 </div>
             </div>
-
-            {showAddEmpruntPopup && (
-                <div className="popup">
-                    <div className="popup-content">
-                        <h5>Ajouter un emprunt</h5>
-                        <input type="text" name="cne" placeholder="CNE" onChange={handleAddEmpruntChange} value={newEmprunt.cne} />
-                        <input type="text" name="numSom" placeholder="Num de Som" onChange={handleAddEmpruntChange} value={newEmprunt.numSom} />
-                        <input type="text" name="nomPrenom" placeholder="Nom et Prénom" onChange={handleAddEmpruntChange} value={newEmprunt.nomPrenom} />
-                        <input type="text" name="titreLivre" placeholder="Titre du Livre" onChange={handleAddEmpruntChange} value={newEmprunt.titreLivre} />
-                        <input type="date" name="dateEmprunt" placeholder="Date d'Emprunt" onChange={handleAddEmpruntChange} value={newEmprunt.dateEmprunt} />
-                        <button onClick={handleAddEmpruntSubmit} className="btn btn-primary custom-btn mt-2">Ajouter l'emprunt</button>
-                        <button onClick={() => setShowAddEmpruntPopup(false)} className="btn btn-secondary mt-2">Annuler</button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
 
-export default Emprunts;
+export default GestionEmprunts;

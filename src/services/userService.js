@@ -160,26 +160,6 @@ export const getUserByEmail = async (email) => {
     }
 };
 
-export const getUserById = async (userID) => {
-    //non seulement pour les admin mais cette partie est pour tous les utilisateur de la bibliotheque la fonction 
-    //est pour recuperer les info dans le profil
-    try {
-        const response = await fetch(`${API_BASE_URL}/id/${userID}`, {
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch user by id');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error(`Error in getUserById :`, error);
-        return null;
-    }
-};
-
 // Fonction pour changer le mot de passe d'un utilisateur
 export const changeUserPassword = async (id, newPassword) => {
     try {
@@ -268,6 +248,5 @@ export default {
     changeUserPassword,
     getPhotoByUserId,
     savePhotoToUser,
-    getUserById
 };
 

@@ -89,6 +89,13 @@
   position: relative;
 }
 
+.profile-image {
+  width: 30px; /* Même taille que l'icône */
+  height: 30px; /* Proportion carrée */
+  border-radius: 50%; /* Arrondi pour un style circulaire */
+  object-fit: cover; /* Gère le redimensionnement sans déformation */
+}
+
 .profile-icon {
   font-size: 30px;
   color: #004079;

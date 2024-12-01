@@ -20,20 +20,39 @@ const Profil = () => {
 
   // Charger les données utilisateur
   const loadUserData = async () => {
-    const emailFromToken = authService.getEmailFromToken(); // Extraire l'email du token
+    const emailFromToken = authService.getEmailFromToken();
     setEmail(emailFromToken);
-
+  
     try {
       const user = await userService.getUserByEmail(emailFromToken);
       setNom(user.nom);
       setPrenom(user.prenom);
       setCode(user.code);
-      setUserId(user.id); // Stocker l'ID utilisateur pour les mises à jour
+      setUserId(user.id);
+  
+      // Charger l'image de profil depuis la base de données
+      const userImage = await userService.getPhotoByUserId(user.id);
+  
+      if (userImage) {
+        const blob = new Blob([userImage], { type: 'image/jpeg' }); // Définir le type MIME
+        const imageUrl = URL.createObjectURL(blob); // Générer une URL temporaire
+        setImage(imageUrl);
+      } else {
+        setImage('https://via.placeholder.com/150'); // Si pas d'image, afficher un placeholder
+      }
     } catch (error) {
       setError("Impossible de récupérer les informations utilisateur.");
+      console.error('Erreur de récupération des données utilisateur:', error);
     }
   };
+  
 
+  // Fonction pour convertir le tableau d'octets en base64
+  const convertByteArrayToBase64 = (byteArray) => {
+    const binaryString = byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+    return btoa(binaryString); // Encodage en Base64
+  };
+  
   useEffect(() => {
     loadUserData();
   }, []);
@@ -53,40 +72,56 @@ const Profil = () => {
     }
 
     try {
-        // Récupérer le mot de passe encodé du local storage
-        const encodedPassword = localStorage.getItem("encodedPassword");
+      // Récupérer le mot de passe encodé du local storage
+      const encodedPassword = localStorage.getItem("encodedPassword");
 
-        // Décoder le mot de passe
-        const decodedPassword = atob(encodedPassword);
+      // Décoder le mot de passe
+      const decodedPassword = atob(encodedPassword);
 
-        // Vérifier si l'ancien mot de passe correspond
-        if (oldPassword !== decodedPassword) {
-            setError("L'ancien mot de passe est incorrect.");
-            return;
+      // Vérifier si l'ancien mot de passe correspond
+      if (oldPassword !== decodedPassword) {
+          setError("L'ancien mot de passe est incorrect.");
+          return;
+      }
+
+      // Appel de l'API pour changer le mot de passe
+      await userService.changeUserPassword(userId, newPassword);
+
+      // Mettre à jour le mot de passe dans le local storage
+      const newEncodedPassword = btoa(newPassword);
+      localStorage.setItem("encodedPassword", newEncodedPassword);
+
+      setError('');
+      setSuccess('Mot de passe mis à jour avec succès.');
+      setPasswordChanged(true);
+      setIsPasswordEditing(false);
+  } catch (error) {
+      setError('Une erreur est survenue lors de la mise à jour du mot de passe.');
+  }
+  };
+
+  const handleSaveImage = async () => {
+    if (imageChanged) {
+      try {
+        const file = document.querySelector('.image-upload').files[0]; // Récupérer le fichier sélectionné
+        if (file) {
+          await userService.savePhotoToUser(userId, file); // Enregistrer l'image
+          setSuccess('Image de profil mise à jour avec succès.');
+          setImageChanged(false); // Réinitialiser l'état de l'image changée
         }
-
-        // Appel de l'API pour changer le mot de passe
-        await userService.changeUserPassword(userId, newPassword);
-
-        // Mettre à jour le mot de passe dans le local storage
-        const newEncodedPassword = btoa(newPassword);
-        localStorage.setItem("encodedPassword", newEncodedPassword);
-
-        setError('');
-        setSuccess('Mot de passe mis à jour avec succès.');
-        setPasswordChanged(true);
-        setIsPasswordEditing(false);
-    } catch (error) {
-        setError('Une erreur est survenue lors de la mise à jour du mot de passe.');
+      } catch (error) {
+        setError('Erreur lors de la mise à jour de l\'image de profil.');
+      }
     }
-};
-
+  };
 
   const handleSaveChanges = () => {
     if (imageChanged || passwordChanged) {
+      handleSaveImage();
       alert('Changements enregistrés !');
       // Implémenter la logique pour sauvegarder les autres changements ici
     } else {
+      handleSaveImage();
       alert('Aucun changement détecté.');
     }
   };
@@ -101,7 +136,7 @@ const Profil = () => {
           <label className="profil-label">Image de Profil :</label>
           <div className="image-container">
             <img
-              src={image || 'https://via.placeholder.com/150'}
+              src={image || 'https://via.placeholder.com/150'} // Afficher l'image ou un placeholder
               alt="Image de profil"
               className="profil-image"
             />

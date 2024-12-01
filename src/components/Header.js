@@ -2,37 +2,46 @@ import React, { useState, useEffect } from 'react';
 import '../styles/Header.css';
 import logo from '../assets/Fsts.png';
 import { Link } from 'react-router-dom'; 
-import { getUserByEmail } from '../services/userService'; // Importer le service
+import { getUserByEmail, getPhotoByUserId } from '../services/userService'; // Importer les services
 import { getEmailFromToken } from '../services/authService'; // Importer le service d'authentification
 
 const Header = () => {
   const [showProfileDetails, setShowProfileDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [hasNotification, setHasNotification] = useState(false); // État pour gérer les notifications
-  const [user, setUser] = useState(null); // État pour stocker les informations de l'utilisateur
-  const [email, setEmail] = useState(null); // État pour l'email de l'utilisateur
-  const [notifications, setNotifications] = useState([]); // État pour stocker la liste des notifications
-  const [showNotifications, setShowNotifications] = useState(false); // État pour afficher/masquer les notifications
+  const [hasNotification, setHasNotification] = useState(false);
+  const [user, setUser] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [profileImage, setProfileImage] = useState(null); // État pour stocker l'image de profil
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  // Utiliser useEffect pour extraire l'email du token et récupérer les informations utilisateur
+  // Utiliser useEffect pour charger les données utilisateur et l'image de profil
   useEffect(() => {
     const emailFromToken = getEmailFromToken(); // Extraire l'email du token
-    setEmail(emailFromToken); // Mettre à jour l'email
+    setEmail(emailFromToken);
 
     if (emailFromToken) {
       const fetchUser = async () => {
-        const userData = await getUserByEmail(emailFromToken); // Appel de la fonction pour récupérer l'utilisateur
+        const userData = await getUserByEmail(emailFromToken); // Récupérer les infos utilisateur
         if (userData) {
-          setUser(userData); // Mettre à jour l'état avec les données de l'utilisateur
+          setUser(userData);
+
+          // Récupérer l'image de profil si elle existe
+          const userImage = await getPhotoByUserId(userData.id);
+          if (userImage) {
+            const blob = new Blob([userImage], { type: 'image/jpeg' });
+            const imageUrl = URL.createObjectURL(blob);
+            setProfileImage(imageUrl);
+          }
         }
       };
       fetchUser();
     }
 
-    // Ajoutez ici un gestionnaire de clic pour fermer les détails du profil si l'utilisateur clique en dehors
+    // Gestion des clics extérieurs pour fermer les détails du profil
     document.addEventListener('click', handleOutsideClick);
     return () => document.removeEventListener('click', handleOutsideClick);
-  }, [email]); // Déclenche l'effet chaque fois que l'email change
+  }, [email]);
 
   const handleProfileClick = () => {
     setShowProfileDetails(!showProfileDetails);
@@ -54,23 +63,20 @@ const Header = () => {
   };
 
   const toggleNotification = () => {
-    setShowNotifications(!showNotifications); // Change l'état pour afficher/masquer les notifications
+    setShowNotifications(!showNotifications);
     if (notifications.length > 0) {
-      setHasNotification(false); // Réinitialiser le badge des notifications une fois consultées
+      setHasNotification(false);
     }
   };
 
-  // Exemple de notifications avec URL associée
+  // Exemple de notifications
   useEffect(() => {
-    // Simule des notifications reçues avec des liens vers différentes pages
     setNotifications([
       { id: 1, message: 'Nouveau livre ajouté: "Les Voyageurs"', time: '2 min ago', url: '/gestion-livre' },
       { id: 2, message: 'Retour de livre en retard: "Le Grand Livre"', time: '5 min ago', url: '/gestion-retours' },
-      { id: 3, message: 'Emprunt d\'un livre par l\'utilisateur: "Jean Dupont"', time: '15 min ago', url: '/gestion-emprunts' },
-      { id: 4, message: 'Nouvelle réservation pour "Le Petit Prince"', time: '20 min ago', url: '/gestion-reservation' }, // Exemple de réservation
     ]);
     if (notifications.length > 0) {
-      setHasNotification(true); // Activer le badge si des notifications sont disponibles
+      setHasNotification(true);
     }
   }, [notifications.length]);
 
@@ -96,7 +102,6 @@ const Header = () => {
         {hasNotification && <div className="notification-dot"></div>}
       </div>
 
-      {/* Notifications Dropdown style Facebook */}
       {showNotifications && (
         <div className="notification-dropdown">
           <h5>Notifications</h5>
@@ -106,8 +111,7 @@ const Header = () => {
             <ul>
               {notifications.map((notification) => (
                 <li key={notification.id}>
-                  {/* Vérifie si le message contient "réservation" pour rediriger vers la page de réservation */}
-                  <Link to={notification.message.toLowerCase().includes('réservation') ? '/gestion-reservations' : notification.url}>
+                  <Link to={notification.url}>
                     <p>{notification.message}</p>
                   </Link>
                   <span>{notification.time}</span>
@@ -118,20 +122,28 @@ const Header = () => {
         </div>
       )}
 
-      <div className="profile-container" onClick={handleProfileClick}>
-        <Link to="/profil">
-          <i className="fas fa-user-circle profile-icon"></i> 
-        </Link>
-        <span className="profile-name">{user ? `${user.nom} ${user.prenom}` : 'Chargement...'}</span>
-        {showProfileDetails && user && (
-          <div className="profile-details">
-            <p><strong>Nom:</strong> {user.nom}</p>
-            <p><strong>Prénom:</strong> {user.prenom}</p>
-            <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>Code:</strong> {user.code}</p>
-          </div>
-        )}
-      </div>
+<div className="profile-container" onClick={handleProfileClick}>
+  {profileImage ? (
+    <Link to="/profil">
+      <img src={profileImage} alt="Image de profil" className="profile-image" />
+    </Link>
+  ) : (
+
+    <Link to="/profil">
+       <i className="fas fa-user-circle profile-icon"></i>
+    </Link>
+   
+  )}
+  <span className="profile-name">{user ? `${user.nom} ${user.prenom}` : 'Chargement...'}</span>
+  {showProfileDetails && user && (
+    <div className="profile-details">
+      <p><strong>Nom:</strong> {user.nom}</p>
+      <p><strong>Prénom:</strong> {user.prenom}</p>
+      <p><strong>Email:</strong> {user.email}</p>
+      <p><strong>Code:</strong> {user.code}</p>
+    </div>
+  )}
+</div>
     </div>
   );
 };
