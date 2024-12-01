@@ -82,7 +82,7 @@ export const updateUser = async (type, id, updatedUserData) => {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${getToken()}`,
+                'Authorization': `Bearer ${getToken()}`,
             },
             body: JSON.stringify(updatedUserData),
         });
@@ -166,7 +166,7 @@ export const changeUserPassword = async (id, newPassword) => {
         const response = await fetch(`${API_BASE_URL}/password/${id}`, {
             method: 'PUT',
             headers: {
-                Authorization: `Bearer ${getToken()}`,
+                'Authorization': `Bearer ${getToken()}`,
                 'newPassword': newPassword, // Utilisation du header pour transmettre le nouveau mot de passe
             },
         });
@@ -182,6 +182,54 @@ export const changeUserPassword = async (id, newPassword) => {
     }
 };
 
+// Fonction pour récupérer la photo d'un utilisateur par son ID
+export const getPhotoByUserId = async (id) => {
+    try {
+        const response = await fetch(`http://localhost:8080/api/photos/user/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`, // Ajouter le token
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération de la photo de l’utilisateur.');
+        }
+
+        // Récupérer les octets bruts en tant que Blob
+    const blob = await response.blob();
+    return blob; // La photo est retournée sous forme de chaîne de caractères
+    } catch (error) {
+        console.error(`Erreur dans getPhotoByUserId :`, error);
+        return null;
+    }
+};
+
+// Fonction pour enregistrer une photo pour un utilisateur
+export const savePhotoToUser = async (userId, file) => {
+    const token = getToken(); // Remplacez par votre méthode pour récupérer le token
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/photos/users/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`, // Ajouter le token
+            },
+            body: formData, // Envoyer le fichier
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json(); // Vérifiez si une réponse JSON est retournée
+    } catch (error) {
+        console.error('Erreur dans savePhotoToUser:', error);
+        throw new Error('Erreur lors de l’enregistrement de la photo de l’utilisateur.');
+    }
+};
 
 
 // Utilitaires pour capitaliser le nom du type d'utilisateur
@@ -198,5 +246,7 @@ export default {
     deleteAllUsers,
     getUserByEmail,
     changeUserPassword,
+    getPhotoByUserId,
+    savePhotoToUser,
 };
 

@@ -26,7 +26,7 @@ const GestionEtudiants = () => {
                 prenom: newUser.prenom,
                 email: newUser.email,
                 codeMassar: newUser.code,
-                role: "ETUDIANT"
+                //role: "ETUDIANT"
             };
             await userService.addUser('etudiant', etudiant, "123456");
             const data = await userService.getUsers('etudiant'); // Actualise la liste des étudiants
@@ -43,7 +43,7 @@ const GestionEtudiants = () => {
                 prenom: user.prenom,
                 email: user.email,
                 codeMassar: user.codeMassar, 
-                role: "ETUDIANT"
+               // role: "ETUDIANT"
             };
             const updatedData = await userService.updateUser('etudiant', user.id, updatedUser); // Utilisation de l'email pour la mise à jour
             setUsers(prevUsers => 

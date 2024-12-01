@@ -15,6 +15,13 @@ export const login = async (email, password) => {
         }
 
         const data = await response.json();
+
+        // Encoder le mot de passe en Base64
+        const encodedPassword = btoa(password);
+
+        // Stocker le mot de passe encodé dans le local storage
+        localStorage.setItem("encodedPassword", encodedPassword);
+
         return data; // Retourne l'objet contenant le token JWT
     } catch (error) {
         console.error("Login error:", error);

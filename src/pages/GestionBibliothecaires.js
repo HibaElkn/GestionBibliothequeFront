@@ -26,7 +26,7 @@ const GestionBibliothecaires = () => {
                 prenom: newUser.prenom,
                 email: newUser.email,
                 code: newUser.code, // Utilisation du 'Numéro de SOM'
-                role: "BIBLIOTHECAIRE"
+                //role: "BIBLIOTHECAIRE"
             };
             await userService.addUser('bibliothecaire', bibliothecaire, "123456"); // Ajout d'un bibliothécaire
             const data = await userService.getUsers('bibliothecaire'); // Récupère la liste mise à jour
@@ -43,7 +43,7 @@ const GestionBibliothecaires = () => {
                 prenom: user.prenom,
                 email: user.email,
                 code: user.code, // 'Numéro de SOM'
-                role: "BIBLIOTHECAIRE"
+                //role: "BIBLIOTHECAIRE"
             };
             const updatedData = await userService.updateUser('bibliothecaire', user.id, updatedUser); // Mise à jour basée sur l'email
             setUsers(prevUsers => 
