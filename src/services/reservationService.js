@@ -107,3 +107,25 @@ export async function deleteReservation(id) {
         throw error;
     }
 }
+
+export async function getReservationsByUser(userId) {
+    try {
+        const response = await fetch(`${API_URL}/by-user/${userId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${getToken()}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur lors de la récupération des réservations : ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data; // Retourne les données des réservations
+    } catch (error) {
+        console.error("Erreur dans getReservationsByUser:", error);
+        throw error; // Propager l'erreur pour que l'appelant puisse la gérer
+    }
+}
