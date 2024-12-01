@@ -86,6 +86,10 @@ const Navbar = () => {
               <i className="fas fa-calendar-check"></i>
               <span>Gestion des Emprunts</span>
             </Link>
+            <Link to="/gestion-retours" className="nav-button nav-button-management">
+            <i className="fas fa-sync-alt"></i>
+              <span>Gestion des retours</span>
+            </Link>
           </>
         )}
 

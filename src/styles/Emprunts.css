@@ -55,8 +55,9 @@ table.table tr th {
 }
 
 table.table {
-    width: 90%;
+    width: 100%;
     margin: 0 auto;
+    table-layout: fixed;
 }
 
 table.table-striped tbody tr:nth-of-type(odd) {

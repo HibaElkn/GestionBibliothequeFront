@@ -11,6 +11,8 @@ const Header = () => {
   const [hasNotification, setHasNotification] = useState(false); // État pour gérer les notifications
   const [user, setUser] = useState(null); // État pour stocker les informations de l'utilisateur
   const [email, setEmail] = useState(null); // État pour l'email de l'utilisateur
+  const [notifications, setNotifications] = useState([]); // État pour stocker la liste des notifications
+  const [showNotifications, setShowNotifications] = useState(false); // État pour afficher/masquer les notifications
 
   // Utiliser useEffect pour extraire l'email du token et récupérer les informations utilisateur
   useEffect(() => {
@@ -52,8 +54,25 @@ const Header = () => {
   };
 
   const toggleNotification = () => {
-    setHasNotification(!hasNotification); // Change l'état des notifications
+    setShowNotifications(!showNotifications); // Change l'état pour afficher/masquer les notifications
+    if (notifications.length > 0) {
+      setHasNotification(false); // Réinitialiser le badge des notifications une fois consultées
+    }
   };
+
+  // Exemple de notifications avec URL associée
+  useEffect(() => {
+    // Simule des notifications reçues avec des liens vers différentes pages
+    setNotifications([
+      { id: 1, message: 'Nouveau livre ajouté: "Les Voyageurs"', time: '2 min ago', url: '/gestion-livre' },
+      { id: 2, message: 'Retour de livre en retard: "Le Grand Livre"', time: '5 min ago', url: '/gestion-retours' },
+      { id: 3, message: 'Emprunt d\'un livre par l\'utilisateur: "Jean Dupont"', time: '15 min ago', url: '/gestion-emprunts' },
+      { id: 4, message: 'Nouvelle réservation pour "Le Petit Prince"', time: '20 min ago', url: '/gestion-reservation' }, // Exemple de réservation
+    ]);
+    if (notifications.length > 0) {
+      setHasNotification(true); // Activer le badge si des notifications sont disponibles
+    }
+  }, [notifications.length]);
 
   return (
     <div className="header">
@@ -77,11 +96,32 @@ const Header = () => {
         {hasNotification && <div className="notification-dot"></div>}
       </div>
 
+      {/* Notifications Dropdown style Facebook */}
+      {showNotifications && (
+        <div className="notification-dropdown">
+          <h5>Notifications</h5>
+          {notifications.length === 0 ? (
+            <p>Aucune notification</p>
+          ) : (
+            <ul>
+              {notifications.map((notification) => (
+                <li key={notification.id}>
+                  {/* Vérifie si le message contient "réservation" pour rediriger vers la page de réservation */}
+                  <Link to={notification.message.toLowerCase().includes('réservation') ? '/gestion-reservations' : notification.url}>
+                    <p>{notification.message}</p>
+                  </Link>
+                  <span>{notification.time}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <div className="profile-container" onClick={handleProfileClick}>
         <Link to="/profil">
           <i className="fas fa-user-circle profile-icon"></i> 
         </Link>
-        {/* Afficher le nom et prénom récupérés */}
         <span className="profile-name">{user ? `${user.nom} ${user.prenom}` : 'Chargement...'}</span>
         {showProfileDetails && user && (
           <div className="profile-details">
