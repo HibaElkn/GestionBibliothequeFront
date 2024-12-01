@@ -37,13 +37,16 @@ const MesResrvations = () => {
             setError(null);
             try {
                 const reservations = await getReservationsByUser(userId);
-
+    
+                // Filtrer uniquement les réservations avec le statut 'ENCOURS'
+                const filteredReservations = reservations.filter(reservation => reservation.reservationStatus === 'ENCOURS');
+    
                 // Pour chaque réservation, récupérer le titre du document
                 const reservationsWithTitles = await Promise.all(
-                    reservations.map(async (reservation) => {
+                    filteredReservations.map(async (reservation) => {
                         try {
                             const document = await documentService.getDocumentById(reservation.documentId);
-                           // Récupère le document
+                            // Récupère le document
                             return {
                                 ...reservation,
                                 titreDocument: document.titre || "Titre non disponible", // Ajoute le titre du document
@@ -57,7 +60,7 @@ const MesResrvations = () => {
                         }
                     })
                 );
-
+    
                 setReservationsData(reservationsWithTitles);
             } catch (err) {
                 setError('Erreur lors du chargement des réservations. Veuillez réessayer.');
@@ -66,10 +69,10 @@ const MesResrvations = () => {
                 setLoading(false);
             }
         };
-
+    
         fetchReservations();
     }, [userId]);
-
+    
     // Charger les données utilisateur au premier rendu
     useEffect(() => {
         loadUserData();

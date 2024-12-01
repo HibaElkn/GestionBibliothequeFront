@@ -1,76 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css'; // Assurez-vous d'importer FontAwesome
 import '../styles/Emprunts.css';
+import { getAllReservations, updateReservation } from '../services/reservationService'; // Assurez-vous d'importer la fonction
+import documentService from '../services/documentService'; // Assurez-vous d'importer la fonction pour récupérer le titre du document
+import userService from '../services/userService'; // Assurez-vous d'importer la fonction pour récupérer les informations de l'utilisateur
 
-const GestionReservations = ({ onUpdateHistorique }) => {
+const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
-    const [reservationsData, setReservationsData] = useState([
-        {
-            id: 1,
-            cne: '123456',
-            numSom: '7890',
-            nomPrenom: 'John Doe',
-            titreLivre: 'Le Grand Livre',
-            dateReservation: '2024-11-20',
-            statut: 'en attente',
-        },
-        {
-            id: 2,
-            cne: '234567',
-            numSom: '8901',
-            nomPrenom: 'Jane Smith',
-            titreLivre: 'Les Mystères de l\'univers',
-            dateReservation: '2024-11-21',
-            statut: 'en attente',
-        },
-        {
-            id: 3,
-            cne: '345678',
-            numSom: '9012',
-            nomPrenom: 'Marc Dupont',
-            titreLivre: 'Le Voyage Extraordinaire',
-            dateReservation: '2024-11-22',
-            statut: 'en attente',
-        }
-    ]);
+   
 
-    const [historiqueReservations, setHistoriqueReservations] = useState([]);
+    const [reservationsData, setReservationsData] = useState([]); // Initialisez avec un tableau vide
+
+    // Utilisez useEffect pour charger les réservations à partir de l'API
+    useEffect(() => {
+        const fetchReservations = async () => {
+            try {
+                const data = await getAllReservations(); // Récupérer les données via l'API
+                // Ajout des titres des documents et des informations utilisateur
+                const reservationsWithDetails = await Promise.all(
+                    data.map(async (reservation) => {
+                        try {
+                            const document = await documentService.getDocumentById(reservation.documentId); // Récupère le document
+                            const user = await userService.getUserById(reservation.utilisateurId); // Récupère l'utilisateur
+
+                            return {
+                                ...reservation,
+                                titreDocument: document.titre || "Titre non disponible", // Ajoute le titre du document
+                                code: user?.code || "code non disponible", // Ajoute le code de l'utilisateur
+                                nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible", // Nom et prénom de l'utilisateur
+                            };
+                        } catch (err) {
+                            console.error(`Erreur lors de la récupération des détails pour la réservation ID: ${reservation.id}`, err);
+                            return {
+                                ...reservation,
+                                titreDocument: "Titre non disponible", // Valeur par défaut en cas d'erreur
+                                code: "code non disponible", // Valeur par défaut pour code
+                                nomPrenom: "Nom non disponible", // Valeur par défaut pour le nom
+                            };
+                        }
+                    })
+                );
+                setReservationsData(reservationsWithDetails); // Mettre à jour les données des réservations avec les titres et les informations utilisateur
+            } catch (error) {
+                console.error('Erreur lors de la récupération des réservations:', error);
+            }
+        };
+
+        fetchReservations();
+    }, []); // Ce useEffect se déclenche uniquement lors du premier montage du composant
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = reservationsData.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(reservationsData.length / itemsPerPage);
+
+    // Filtrer uniquement les réservations en cours
+    const currentItems = reservationsData
+        .filter(reservation => reservation.reservationStatus === 'ENCOURS')
+        .slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(reservationsData.filter(reservation => reservation.reservationStatus === 'ENCOURS').length / itemsPerPage);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const getStatutClass = (statut) => {
         switch (statut) {
-            case 'confirmé':
+            case 'ACCEPTED':
                 return 'bg-success text-white';
-            case 'en attente':
+            case 'ENCOURS':
                 return 'bg-warning text-dark';
-            case 'refusé':
+            case 'REJECTED':
                 return 'bg-danger text-white';
             default:
                 return '';
         }
     };
 
-    const handleStatutChange = (id, newStatut) => {
-        const reservationToUpdate = reservationsData.find(reservation => reservation.id === id);
-
-        if (reservationToUpdate) {
-            const updatedReservation = { ...reservationToUpdate, statut: newStatut };
-            setHistoriqueReservations(prev => [...prev, updatedReservation]);
-
-            const updatedReservations = reservationsData.filter(reservation => reservation.id !== id);
-            setReservationsData(updatedReservations);
-
-            if (onUpdateHistorique) {
-                onUpdateHistorique([...historiqueReservations, updatedReservation]);
-            }
+    // Fonction pour mettre à jour le statut dans l'API et dans l'interface
+    const handleStatutChange = async (id, newStatut) => {
+        // Trouver la réservation à mettre à jour
+        const updatedReservations = reservationsData.map(reservation => 
+            reservation.id === id ? { 
+                ...reservation, 
+                reservationStatus: newStatut 
+                // On ne touche pas à la dateReservation pour la garder inchangée
+            } : reservation
+        );
+        setReservationsData(updatedReservations);
+    
+        // Créer un objet pour l'update, en envoyant seulement les champs nécessaires
+        const updatedReservation = updatedReservations.find(reservation => reservation.id === id);
+        
+        // Mise à jour dans la base de données avec la date inchangée
+        try {
+            await updateReservation(id, {
+                utilisateurId: updatedReservation.utilisateurId,
+                documentId: updatedReservation.documentId,
+                dateReservation: updatedReservation.dateReservation, // Ne pas changer la date
+                reservationStatus: newStatut
+            });
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour de la réservation :", error);
         }
     };
 
@@ -80,7 +110,7 @@ const GestionReservations = ({ onUpdateHistorique }) => {
                 <table className="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>CNE / Num de Som</th>
+                            <th>Code</th>
                             <th>Nom et Prénom</th>
                             <th>Titre du Livre</th>
                             <th>Date de réservation</th>
@@ -91,25 +121,25 @@ const GestionReservations = ({ onUpdateHistorique }) => {
                     <tbody>
                         {currentItems.map(reservation => (
                             <tr key={reservation.id}>
-                                <td>{reservation.cne} / {reservation.numSom}</td>
-                                <td>{reservation.nomPrenom}</td>
-                                <td>{reservation.titreLivre}</td>
+                                <td>{reservation.code}</td> {/* Affiche code */}
+                                <td>{reservation.nomPrenom}</td> {/* Affiche nom et prénom */}
+                                <td>{reservation.titreDocument}</td> {/* Affichage du titre du document */}
                                 <td>{reservation.dateReservation}</td>
                                 <td>
-                                    <span className={`badge ${getStatutClass(reservation.statut)} rounded-3`}>
-                                        {reservation.statut}
+                                    <span className={`badge ${getStatutClass(reservation.reservationStatus)} rounded-3`}>
+                                        {reservation.reservationStatus}
                                     </span>
                                 </td>
                                 <td>
                                     <button
                                         className="btn btn-sm text-success"
-                                        onClick={() => handleStatutChange(reservation.id, 'confirmé')}
+                                        onClick={() => handleStatutChange(reservation.id, 'ACCEPTED')}
                                     >
                                         ✔
                                     </button>
                                     <button
                                         className="btn btn-sm text-danger"
-                                        onClick={() => handleStatutChange(reservation.id, 'refusé')}
+                                        onClick={() => handleStatutChange(reservation.id, 'REJECTED')}
                                     >
                                         ✘
                                     </button>
