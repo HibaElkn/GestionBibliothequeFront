@@ -1,50 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css'; // Assurez-vous d'importer FontAwesome
 import '../styles/Emprunts.css';
+import { getAllReservations } from '../services/reservationService'; // Assurez-vous d'importer la fonction
+import documentService from '../services/documentService'; // Assurez-vous d'importer la fonction pour récupérer le titre du document
+import userService from '../services/userService'; // Assurez-vous d'importer la fonction pour récupérer les informations de l'utilisateur
 
 const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
     const [showAddReservationPopup, setShowAddReservationPopup] = useState(false);
     const [newReservation, setNewReservation] = useState({
-        cne: '',
-        numSom: '',
+        code: '',
         nomPrenom: '',
         titreLivre: '',
         dateReservation: '',
         statut: 'en attente', // Valeur par défaut
     });
 
-    const [reservationsData, setReservationsData] = useState([
-        {
-            id: 1,
-            cne: '123456',
-            numSom: '7890',
-            nomPrenom: 'John Doe',
-            titreLivre: 'Le Grand Livre',
-            dateReservation: '2024-11-20',
-            statut: 'confirmé',
-        },
-        {
-            id: 2,
-            cne: '234567',
-            numSom: '8901',
-            nomPrenom: 'Jane Smith',
-            titreLivre: 'Les Mystères de l\'univers',
-            dateReservation: '2024-11-21',
-            statut: 'en attente',
-        },
-        {
-            id: 3,
-            cne: '345678',
-            numSom: '9012',
-            nomPrenom: 'Marc Dupont',
-            titreLivre: 'Le Voyage Extraordinaire',
-            dateReservation: '2024-11-22',
-            statut: 'refusé',
-        }
-    ]);
+    const [reservationsData, setReservationsData] = useState([]); // Initialisez avec un tableau vide
+
+    // Utilisez useEffect pour charger les réservations à partir de l'API
+    useEffect(() => {
+        const fetchReservations = async () => {
+            try {
+                const data = await getAllReservations(); // Récupérer les données via l'API
+                // Ajout des titres des documents et des informations utilisateur
+                const reservationsWithDetails = await Promise.all(
+                    data.map(async (reservation) => {
+                        try {
+                            const document = await documentService.getDocumentById(reservation.documentId); // Récupère le document
+                            const user = await userService.getUserById(reservation.utilisateurId); // Récupère l'utilisateur
+
+                            return {
+                                ...reservation,
+                                titreDocument: document.titre || "Titre non disponible", // Ajoute le titre du document
+                                code: user?.code || "code non disponible", // Ajoute le code de l'utilisateur
+                                nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible", // Nom et prénom de l'utilisateur
+                            };
+                        } catch (err) {
+                            console.error(`Erreur lors de la récupération des détails pour la réservation ID: ${reservation.id}`, err);
+                            return {
+                                ...reservation,
+                                titreDocument: "Titre non disponible", // Valeur par défaut en cas d'erreur
+                                code: "code non disponible", // Valeur par défaut pour code
+                                nomPrenom: "Nom non disponible", // Valeur par défaut pour le nom
+                            };
+                        }
+                    })
+                );
+                setReservationsData(reservationsWithDetails); // Mettre à jour les données des réservations avec les titres et les informations utilisateur
+            } catch (error) {
+                console.error('Erreur lors de la récupération des réservations:', error);
+            }
+        };
+
+        fetchReservations();
+    }, []); // Ce useEffect se déclenche uniquement lors du premier montage du composant
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -67,8 +79,7 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
         onAddReservation(newReservation); // Appel à la fonction d'ajout
         setShowAddReservationPopup(false); // Ferme la popup
         setNewReservation({
-            cne: '',
-            numSom: '',
+            code: '',
             nomPrenom: '',
             titreLivre: '',
             dateReservation: '',
@@ -78,11 +89,11 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
 
     const getStatutClass = (statut) => {
         switch (statut) {
-            case 'confirmé':
+            case 'ACCEPTED':
                 return 'bg-success text-white';
-            case 'en attente':
+            case 'ENCOURS':
                 return 'bg-warning text-dark';
-            case 'refusé':
+            case 'REJECTED':
                 return 'bg-danger text-white';
             default:
                 return '';
@@ -119,7 +130,7 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
                 <table className="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>CNE / Num de Som</th>
+                            <th>Code</th>
                             <th>Nom et Prénom</th>
                             <th>Titre du Livre</th>
                             <th>Date de réservation</th>
@@ -130,13 +141,13 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
                     <tbody>
                         {currentItems.map(reservation => (
                             <tr key={reservation.id}>
-                                <td>{reservation.cne} / {reservation.numSom}</td>
-                                <td>{reservation.nomPrenom}</td>
-                                <td>{reservation.titreLivre}</td>
+                                <td>{reservation.code}</td> {/* Affiche code */}
+                                <td>{reservation.nomPrenom}</td> {/* Affiche nom et prénom */}
+                                <td>{reservation.titreDocument}</td> {/* Affichage du titre du document */}
                                 <td>{reservation.dateReservation}</td>
                                 <td>
-                                    <span className={`badge ${getStatutClass(reservation.statut)} rounded-3`}>
-                                        {reservation.statut}
+                                    <span className={`badge ${getStatutClass(reservation.reservationStatus)} rounded-3`}>
+                                        {reservation.reservationStatus}
                                     </span>
                                     
                                     <button 
@@ -165,7 +176,7 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
                                     <button 
                                         onClick={() => handleDeleteReservation(reservation.id)} 
                                         className="btn btn-sm" 
-                                        style={{ color: 'red' }}>
+                                        style={{ color: 'red' }} >
                                         <i className="fas fa-trash-alt"></i>
                                     </button>
                                 </td>
@@ -190,26 +201,6 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
                     </ul>
                 </div>
             </div>
-
-            {showAddReservationPopup && (
-                <div className="popup">
-                    <div className="popup-content">
-                        <h5>Ajouter une réservation</h5>
-                        <input type="text" name="cne" placeholder="CNE" onChange={handleAddReservationChange} value={newReservation.cne} />
-                        <input type="text" name="numSom" placeholder="Num de Som" onChange={handleAddReservationChange} value={newReservation.numSom} />
-                        <input type="text" name="nomPrenom" placeholder="Nom et Prénom" onChange={handleAddReservationChange} value={newReservation.nomPrenom} />
-                        <input type="text" name="titreLivre" placeholder="Titre du Livre" onChange={handleAddReservationChange} value={newReservation.titreLivre} />
-                        <input type="date" name="dateReservation" placeholder="Date de Réservation" onChange={handleAddReservationChange} value={newReservation.dateReservation} />
-                        <select name="statut" value={newReservation.statut} onChange={handleAddReservationChange} className="form-select form-select-sm">
-                            <option value="en attente">En attente</option>
-                            <option value="confirmé">Confirmé</option>
-                            <option value="refusé">Refusé</option>
-                        </select>
-                        <button onClick={handleAddReservationSubmit} className="btn btn-success">Ajouter</button>
-                        <button onClick={() => setShowAddReservationPopup(false)} className="btn btn-secondary">Annuler</button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
