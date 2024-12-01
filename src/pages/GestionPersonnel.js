@@ -26,7 +26,7 @@ const GestionPersonnel = () => {
                 prenom: newUser.prenom,
                 email: newUser.email,
                 code: newUser.code,
-                role: "PERSONNEL"
+                //role: "PERSONNEL"
             };
             await userService.addUser('personnel', personnel, "123456"); // Ajout du personnel
             const data = await userService.getUsers('personnel'); // Récupère la liste mise à jour
@@ -43,7 +43,7 @@ const GestionPersonnel = () => {
                 prenom: user.prenom,
                 email: user.email,
                 code: user.code, // 'Numéro de SOM'
-                role: "PERSONNEL"
+                //role: "PERSONNEL"
             };
             const updatedData = await userService.updateUser('personnel', user.id, updatedUser); // Mise à jour basée sur l'email
             setUsers(prevUsers => 

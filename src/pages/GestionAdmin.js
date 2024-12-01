@@ -26,7 +26,7 @@ const GestionAdmin = () => {
                 prenom: newUser.prenom,
                 email: newUser.email,
                 code: newUser.code, // Utilisation du 'Numéro de SOM'
-                role: "ADMIN"
+                //role: "ADMIN"
             };
             await userService.addUser('admin', admin, "123456"); // Ajout d'un administrateur
             const data = await userService.getUsers('admin'); // Récupère la liste mise à jour des administrateurs
@@ -43,7 +43,7 @@ const GestionAdmin = () => {
                 prenom: user.prenom,
                 email: user.email,
                 code: user.code, // 'Numéro de SOM'
-                role: "ADMIN"
+                //role: "ADMIN"
             };
             const updatedData = await userService.updateUser('admin', user.id, updatedUser); // Mise à jour basée sur l'email
             setUsers(prevUsers => 

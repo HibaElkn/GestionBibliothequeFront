@@ -77,7 +77,8 @@ const BookCard = ({ book, userId }) => {
         const reservation = {
             utilisateurId: userId, // ID de l'utilisateur connecté
             documentId: book.id, // ID du livre
-            dateReservation: borrowDate, // Date choisie
+            dateReservation: borrowDate,
+            reservationStatus: "ENCOURS" // Date choisie
         };
     
         try {
