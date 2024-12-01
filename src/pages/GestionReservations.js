@@ -9,8 +9,6 @@ import userService from '../services/userService'; // Assurez-vous d'importer la
 const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
-   
-
     const [reservationsData, setReservationsData] = useState([]); // Initialisez avec un tableau vide
 
     // Utilisez useEffect pour charger les réservations à partir de l'API
@@ -77,7 +75,7 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
     };
 
     // Fonction pour mettre à jour le statut dans l'API et dans l'interface
-    const handleStatutChange = async (id, newStatut) => {
+    const handleStatutChange = async (id, newStatut, documentId) => {
         // Trouver la réservation à mettre à jour
         const updatedReservations = reservationsData.map(reservation => 
             reservation.id === id ? { 
@@ -99,6 +97,12 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
                 dateReservation: updatedReservation.dateReservation, // Ne pas changer la date
                 reservationStatus: newStatut
             });
+
+            // Si la réservation est acceptée, mettre à jour la disponibilité du livre
+            if (newStatut === 'ACCEPTED') {
+                await documentService.updateDocumentAvailability(documentId, false); // Mettre le livre à "indisponible"
+                console.log("Le livre a été mis à jour comme indisponible.");
+            }
         } catch (error) {
             console.error("Erreur lors de la mise à jour de la réservation :", error);
         }
@@ -133,13 +137,13 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
                                 <td>
                                     <button
                                         className="btn btn-sm text-success"
-                                        onClick={() => handleStatutChange(reservation.id, 'ACCEPTED')}
+                                        onClick={() => handleStatutChange(reservation.id, 'ACCEPTED', reservation.documentId)}
                                     >
                                         ✔
                                     </button>
                                     <button
                                         className="btn btn-sm text-danger"
-                                        onClick={() => handleStatutChange(reservation.id, 'REJECTED')}
+                                        onClick={() => handleStatutChange(reservation.id, 'REJECTED', reservation.documentId)}
                                     >
                                         ✘
                                     </button>

@@ -236,6 +236,27 @@ export const savePhotoToUser = async (userId, file) => {
 const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
 };
+export const getUserById = async (id) => {
+    //non seulement pour les admin mais cette partie est pour tous les utilisateur de la bibliotheque la fonction 
+    //est pour recuperer les info dans le profil
+    try {
+        const response = await fetch(`${API_BASE_URL}/id/${id}`, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch user by email');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(`Error in getUserByEmail :`, error);
+        return null;
+    }
+};
+
+
 
 export default {
     getUsers,
@@ -248,5 +269,6 @@ export default {
     changeUserPassword,
     getPhotoByUserId,
     savePhotoToUser,
+    getUserById,
 };
 
