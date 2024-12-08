@@ -12,6 +12,13 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+/* Ajoutez cette classe dans votre fichier CSS */
+.badge-retard {
+  font-size: 14px; /* Augmentez la taille de la police si nécessaire */
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  white-space: nowrap; /* Assure que le texte ne se coupe pas */
+}
 
 .App-header {
   background-color: #282c34;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/Historique.css';
-import { getAllEmprunts } from '../services/empruntService';
-import { getAllReservations } from '../services/reservationService';
+import { getEmpruntsByUtilisateur } from '../services/empruntService';
+import { getReservationsByUser } from '../services/reservationService';
 import authService from '../services/authService';
 import userService from '../services/userService';
 import documentService from '../services/documentService';
@@ -23,7 +23,7 @@ const StatusBadge = ({ statut }) => {
     return <span className={getStatutClass(statut)}>{statut}</span>;
 };
 
-const Historique = () => {
+const MonHistorique = () => {
     const [historiqueData, setHistoriqueData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [filterType, setFilterType] = useState('Tous');
@@ -35,6 +35,7 @@ const Historique = () => {
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
 
+    // Charger l'ID utilisateur
     useEffect(() => {
         const loadUserData = async () => {
             try {
@@ -49,71 +50,78 @@ const Historique = () => {
         loadUserData();
     }, []);
 
-    useEffect(() => {
-        const fetchHistorique = async () => {
-            if (!userId) return;
-            setLoading(true);
-            setError(null);
-            try {
-                const emprunts = await getAllEmprunts();
-                const reservations = await getAllReservations();
+    // Charger l'historique de l'utilisateur connecté
+    // Charger l'historique de l'utilisateur connecté
+useEffect(() => {
+    const fetchHistorique = async () => {
+        if (!userId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const emprunts = await getEmpruntsByUtilisateur(userId);
+            const reservations = await getReservationsByUser(userId);
 
-                const empruntsAvecType = emprunts
-                    .filter(emprunt => emprunt.statut === 'RETOURNER')
-                    .map(emprunt => ({
-                        ...emprunt,
-                        type: 'Retour',
-                        titre: emprunt.document?.titre || emprunt.titre,
-                        code: emprunt.utilisateur?.code || 'Non disponible',
-                        nomPrenom: `${emprunt.utilisateur?.nom || ''} ${emprunt.utilisateur?.prenom || ''}`.trim(),
-                        dateAction: emprunt.dateRetour || emprunt.dateEmprunt,
-                    }));
+            // Filtrer les emprunts pour ne garder que ceux ayant le statut "Retourné"
+            const empruntsAvecType = emprunts
+                .filter(emprunt => emprunt.statut === 'RETOURNER') // Filtrer par statut "Retourné"
+                .map(emprunt => ({
+                    ...emprunt,
+                    type: 'Retour',
+                    titre: emprunt.document?.titre || emprunt.titre,
+                    dateAction: emprunt.dateRetour || emprunt.dateEmprunt,
+                }));
 
-                    const reservationsAvecType = await Promise.all(reservations.map(async (reservation) => {
-                        try {
-                            const document = await documentService.getDocumentById(reservation.documentId); // Récupère le document
-                            const user = await userService.getUserById(reservation.utilisateurId); // Récupère l'utilisateur
-                    
-                            return {
-                                ...reservation,
-                                titre: document.titre || "Titre non disponible", // Ajoute le titre du document
-                                code: user?.code || "code non disponible", // Ajoute le code de l'utilisateur
-                                nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible", // Nom et prénom de l'utilisateur
-                                dateAction: reservation.dateReservation , // Assurez-vous que cette date est correcte
-                                statut: reservation.reservationStatus, // Statut de la réservation (ACCEPTED ou REJECTED)
-                                type: 'Réservation',  // Marquer le type comme "Réservation"
-                            };
-                        } catch (err) {
-                            console.error(`Erreur lors de la récupération des informations pour la réservation ID: ${reservation.id}`, err);
-                            return null; // Retourne null si une erreur se produit
-                        }
-                    }));
-                    
+            // Filtrer les réservations pour ne garder que celles avec les statuts "Accepted" ou "Rejected"
+            const reservationsAvecType = await Promise.all(reservations.map(async (reservation) => {
+                try {
+                    const document = await documentService.getDocumentById(reservation.documentId);
+                    const statutReservation = reservation.reservationStatus;
+                    // Vérifie le statut de la réservation avant de l'inclure
+                    if (statutReservation === 'ACCEPTED' || statutReservation === 'REJECTED') {
+                        return {
+                            ...reservation,
+                            type: 'Réservation',
+                            titre: document.titre || "Titre non disponible",
+                            dateAction: reservation.dateReservation || reservation.dateReservation,
+                            statut: statutReservation,
+                        };
+                    }
+                    return null; // Ignorer la réservation si elle n'a pas un statut valide
+                } catch (err) {
+                    console.error(`Erreur lors de la récupération du titre pour le document ID: ${reservation.documentId}`, err);
+                    return null; // Retourner null si une erreur se produit
+                }
+            }));
 
-                const filteredReservations = reservationsAvecType.filter(reservation => reservation !== null);
+            // Filtrer les valeurs nulles des réservations
+            const filteredReservations = reservationsAvecType.filter(reservation => reservation !== null);
 
-                const historique = [...empruntsAvecType, ...filteredReservations];
-                setHistoriqueData(historique);
-                setFilteredData(historique);
-            } catch (err) {
-                setError("Erreur lors du chargement de l'historique. Veuillez réessayer.");
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
+            // Fusionner les emprunts et les réservations valides
+            const historique = [...empruntsAvecType, ...filteredReservations];
+            setHistoriqueData(historique);
+            setFilteredData(historique);
+        } catch (err) {
+            setError("Erreur lors du chargement de l'historique. Veuillez réessayer.");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchHistorique();
-    }, [userId]);
+    fetchHistorique();
+}, [userId]);
 
-    useEffect(() => {
-        const filtered = filterType === 'Tous'
-            ? historiqueData
-            : historiqueData.filter(item => item.type === filterType);
-        setFilteredData(filtered);
-        setCurrentPage(1);
-    }, [filterType, historiqueData]);
+// Gérer le filtre
+useEffect(() => {
+    const filtered = filterType === 'Tous'
+        ? historiqueData
+        : historiqueData.filter(item => item.type === filterType);
+    setFilteredData(filtered);
+    setCurrentPage(1);
+}, [filterType, historiqueData]);
 
+    // Gérer le filtre
+  
     const sortDataByDate = () => {
         const sorted = [...filteredData].sort((a, b) => {
             const dateA = new Date(a.dateAction);
@@ -172,8 +180,6 @@ const Historique = () => {
                         <thead className="table-dark">
                             <tr>
                                 <th>Type</th>
-                                <th>Code</th>
-                                <th>Nom et Prénom</th>
                                 <th>Titre du Livre</th>
                                 <th>
                                     Date d'Action
@@ -192,8 +198,6 @@ const Historique = () => {
                             {currentItems.map((item) => (
                                 <tr key={item.id}>
                                     <td className={getTypeClass(item.type)}>{item.type}</td>
-                                    <td>{item.code}</td>
-                                    <td>{item.nomPrenom}</td>
                                     <td>{item.titre}</td>
                                     <td>{item.dateAction}</td>
                                     <td><StatusBadge statut={item.statut} /></td>
@@ -244,14 +248,6 @@ const Historique = () => {
                                     <input type="text" className="form-control" id="type" value={selectedItem.type} readOnly />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="code" className="form-label">Code :</label>
-                                    <input type="text" className="form-control" id="code" value={selectedItem.code} readOnly />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="nomPrenom" className="form-label">Nom et Prénom :</label>
-                                    <input type="text" className="form-control" id="nomPrenom" value={selectedItem.nomPrenom} readOnly />
-                                </div>
-                                <div className="mb-3">
                                     <label htmlFor="dateAction" className="form-label">Date d'Action :</label>
                                     <input type="text" className="form-control" id="dateAction" value={selectedItem.dateAction} readOnly />
                                 </div>
@@ -271,4 +267,4 @@ const Historique = () => {
     );
 };
 
-export default Historique;
+export default MonHistorique;

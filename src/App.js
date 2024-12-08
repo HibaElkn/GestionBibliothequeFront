@@ -16,11 +16,13 @@ import UserInterface from './pages/UserInterface';
 import GestionReservations from './pages/GestionReservations';
 
 import Historique from './pages/historique';
+import MonHistorique from './pages/monHistorique';
 import './App.css'; 
 import Profil from './pages/Profil';
 import MesReservations from './pages/MesReservations';
 import GestionRetours from './pages/GestionRetours';
 import Dashboard from './pages/Dashboard';
+import MesEmprunts from './pages/MesEmprunts';
 
 const AppContent = ({ handleDelete }) => {
   const location = useLocation();
@@ -50,9 +52,11 @@ const AppContent = ({ handleDelete }) => {
           <Route path="/gestion-retours" element={<GestionRetours />} />
           <Route path="/user-interface" element={<UserInterface />} />
           <Route path="/historique" element={<Historique />} />
+          <Route path="/mon-historique" element={<MonHistorique />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/mes-reservations" element={<MesReservations />} />
+          <Route path="/mes-emprunts" element={<MesEmprunts />} />
           <Route path="/ajouter-livre" element={<AjouterLivre onClose={() => {}} />} />
           <Route path="/modifier-livre/:id" element={<EditLivre />} />
           <Route

@@ -82,13 +82,10 @@ const Navbar = () => {
               <i className="fas fa-bookmark"></i>
               <span>Gestion des Réservations</span>
             </Link>
-            <Link to="/gestion-emprunts" className="nav-button nav-button-management">
-              <i className="fas fa-calendar-check"></i>
-              <span>Gestion des Emprunts</span>
-            </Link>
+            
             <Link to="/gestion-retours" className="nav-button nav-button-management">
             <i className="fas fa-sync-alt"></i>
-              <span>Gestion des retours</span>
+              <span>Emprunts et retours</span>
             </Link>
           </>
         )}
@@ -101,21 +98,37 @@ const Navbar = () => {
             <i className="fas fa-book"></i>
             <span>Catalogue</span>
           </Link>
-           {/* Section Mes Emprunts */}
+           {/* Section Mes reservations */}
            <Link to="/mes-reservations" className="nav-button">
             <i className="fas fa-calendar-check"></i>
             <span>Mes reservations</span>
           </Link>
+          {/* Section Mes Emprunts */}
+          <Link to="/mes-emprunts" className="nav-button">
+            <i className="fas fa-calendar-check"></i>
+            <span>Mes emprunts</span>
+          </Link>
+          
           </>
         )}
 
         {/* Étudiant et Personnel : Accès au catalogue et à leurs emprunts */}
-        {(isBibliothecaire || isPersonnel || isEtudiant) && (
+        {(isBibliothecaire ) && (
           <>
           {/* Section historique */}
           <Link to="/historique" className="nav-button">
            <i className="fas fa-history"></i>
            <span>Historique</span>
+          </Link>
+          </>
+        )}
+
+        {(isPersonnel || isEtudiant) && (
+          <>
+          {/* Section historique */}
+          <Link to="/mon-historique" className="nav-button">
+           <i className="fas fa-history"></i>
+           <span>Mon historique</span>
           </Link>
           </>
         )}

@@ -5,6 +5,8 @@ import '../styles/Emprunts.css';
 import { getAllReservations, updateReservation } from '../services/reservationService'; // Assurez-vous d'importer la fonction
 import documentService from '../services/documentService'; // Assurez-vous d'importer la fonction pour récupérer le titre du document
 import userService from '../services/userService'; // Assurez-vous d'importer la fonction pour récupérer les informations de l'utilisateur
+import { saveEmprunt } from '../services/empruntService';
+
 
 const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -100,6 +102,17 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
 
             // Si la réservation est acceptée, mettre à jour la disponibilité du livre
             if (newStatut === 'ACCEPTED') {
+                // Calculer la date d'emprunt et la date de retour
+                const dateEmprunt = updatedReservation.dateReservation;
+                const dateRetour = new Date(dateEmprunt);
+                dateRetour.setDate(dateRetour.getDate() + 3); // Ajouter 3 jours à la date d'emprunt
+                
+                const emprunt = {
+                    dateEmprunt: dateEmprunt,
+                    dateRetour: dateRetour.toISOString().split('T')[0], // Format ISO de la date de retour
+                };
+
+                await saveEmprunt(updatedReservation.utilisateurId, documentId, emprunt); // Sauvegarder l'emprunt
                 await documentService.updateDocumentAvailability(documentId, false); // Mettre le livre à "indisponible"
                 console.log("Le livre a été mis à jour comme indisponible.");
             }

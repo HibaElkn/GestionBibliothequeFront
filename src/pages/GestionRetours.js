@@ -1,97 +1,98 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
+import { getAllEmprunts, updateStatut } from '../services/empruntService';
+import documentService from '../services/documentService';
 
 const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
-    const [showAddRetourPopup, setShowAddRetourPopup] = useState(false);
-    const [newRetour, setNewRetour] = useState({
-        cne: '',
-        titreLivre: '',
-        dateRetour: '',
-        statut: 'en attente', // Valeur par défaut
-    });
+    const [retoursData, setRetoursData] = useState([]);
+    const [filter, setFilter] = useState('tous');
+    const [alertMessage, setAlertMessage] = useState('');
 
-    const [retoursData, setRetoursData] = useState([
-        {
-            id: 1,
-            cne: '123456',
-            titreLivre: 'Le Grand Livre',
-            dateRetour: '2024-11-25',
-            statut: 'retourné',
-        },
-        {
-            id: 2,
-            cne: '234567',
-            titreLivre: 'Les Mystères de l\'univers',
-            dateRetour: '2024-11-26',
-            statut: 'en attente',
-        },
-        {
-            id: 3,
-            cne: '345678',
-            titreLivre: 'Le Voyage Extraordinaire',
-            dateRetour: '2024-11-27',
-            statut: 'en retard',
-        },
-        {
-            id: 4,
-            cne: '456789',
-            titreLivre: 'L\'Art de la Guerre',
-            dateRetour: '2024-11-28',
-            statut: 'en attente',
-        },
-        {
-            id: 5,
-            cne: '567890',
-            titreLivre: 'Les Fleurs du Mal',
-            dateRetour: '2024-11-29',
-            statut: 'retourné',
-        },
-        {
-            id: 6,
-            cne: '678901',
-            titreLivre: '1984',
-            dateRetour: '2024-11-30',
-            statut: 'en retard',
-        },
-        {
-            id: 7,
-            cne: '789012',
-            titreLivre: 'Les Misérables',
-            dateRetour: '2024-12-01',
-            statut: 'retourné',
-        },
-        {
-            id: 8,
-            cne: '890123',
-            titreLivre: 'La Peste',
-            dateRetour: '2024-12-02',
-            statut: 'en attente',
-        },
-        {
-            id: 9,
-            cne: '901234',
-            titreLivre: 'Le Comte de Monte-Cristo',
-            dateRetour: '2024-12-03',
-            statut: 'en retard',
-        },
-        {
-            id: 10,
-            cne: '012345',
-            titreLivre: 'Le Petit Prince',
-            dateRetour: '2024-12-04',
-            statut: 'retourné',
+    const getStatutClass = (statut) => {
+        let statutText = '';
+        let className = '';
+
+        switch (statut) {
+            case 'RETOURNER':
+                statutText = 'Retourné';
+                className = 'bg-success text-white';
+                break;
+            case 'ATTENTE':
+                statutText = 'En cours';
+                className = 'bg-warning text-white';
+                break;
+            case 'RETARD':
+                statutText = 'En retard';
+                className = 'bg-danger text-white';
+                break;
+            default:
+                statutText = 'Statut inconnu';
+                className = 'bg-secondary text-white';
         }
-    ]);
 
-    const [filter, setFilter] = useState('tous'); // Ajout du filtre
+        return { statutText, className };
+    };
+
+    useEffect(() => {
+        const fetchEmpruntsWithDocuments = async () => {
+            try {
+                const emprunts = await getAllEmprunts();
+        
+                const today = new Date();
+                const todayFormatted = new Date(today.toLocaleDateString()); // Ignorer l'heure
+        
+                const updatedEmprunts = await Promise.all(
+                    emprunts.map(async (retour) => {
+                        try {
+                            const returnDate = new Date(retour.dateRetour);
+                            const borrowDate = new Date(retour.dateEmprunt);
+                            const returnDateFormatted = new Date(returnDate.toLocaleDateString()); // Ignorer l'heure
+                            const borrowDateFormatted = new Date(borrowDate.toLocaleDateString());
+                            // Comparer uniquement les dates sans tenir compte de l'heure
+                            if (returnDateFormatted <= todayFormatted && retour.statut !== 'RETOURNER') {
+                               // console.log('condition valiiiiiiiiide');
+                                await updateStatut(retour.id, 'RETARD');
+                                
+                            }
+                            if (borrowDateFormatted <= todayFormatted && retour.statut !== 'RETOURNER') {
+                               // console.log('condition valiiiiiiiiide');
+                                await documentService.changeDocumentStatus(retour.document.id, 'NOT_EXIST');
+                            }
+        
+                            return { ...retour, titreDocument: retour.document.titre };
+                        } catch (error) {
+                            console.error(`Erreur lors de la récupération du document ${retour.documentId}`, error);
+                            return { ...retour, titreDocument: 'Titre inconnu' };
+                        }
+                    })
+                );
+        
+                setRetoursData(updatedEmprunts);
+            } catch (error) {
+                setAlertMessage('Erreur lors du chargement des emprunts.');
+            }
+        };
+        
+
+        fetchEmpruntsWithDocuments();
+    }, []);
 
     const filteredRetours = retoursData.filter((retour) => {
-        if (filter === 'tous') return true;
-        return retour.statut === filter;
+        if (filter === 'tous') {
+            return retour.statut === 'ATTENTE' || retour.statut === 'RETARD'; // Inclure "En cours" et "En retard"
+        }
+        if (filter === 'en retard') {
+            return retour.statut === 'RETARD'; // Inclure uniquement "En retard"
+        }
+        if (filter === 'en cours') {
+            return retour.statut === 'ATTENTE'; // Inclure uniquement "En cours"
+        }
+        return false;
     });
+    
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -100,40 +101,21 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const getStatutClass = (statut) => {
-        switch (statut) {
-            case 'retourné':
-                return 'bg-success text-white';
-            case 'en attente':
-                return 'bg-warning text-white';
-            case 'en retard':
-                return 'bg-danger text-white';
-            default:
-                return '';
-        }
-    };
+    const handleUpdateStatut = async (id, documentId) => {
+        try {
+            await updateStatut(id, 'RETOURNER');
+            const updatedEmprunt = await updateStatut(id, 'RETOURNER');
 
-    const [editingStatut, setEditingStatut] = useState(null);
-    const [alertMessage, setAlertMessage] = useState(''); 
-    const handleStatutChange = (id, newStatut) => {
-        const retourToUpdate = retoursData.find(retour => retour.id === id);
-        const returnDate = new Date(retourToUpdate.dateRetour);
-        const today = new Date();
+            // Mettre à jour le statut du document
+          await documentService.changeDocumentStatus(documentId, 'EXIST');
 
-        if (returnDate > today && newStatut === 'en retard') {
-            setAlertMessage("Impossible de marquer ce retour comme en retard avant la date de retour !"); 
-            setTimeout(() => setAlertMessage(''), 5000); 
-            return;
-        }
-
-        const updatedRetours = retoursData.map(retour =>
-            retour.id === id ? { ...retour, statut: newStatut } : retour
-        );
-
-        if (newStatut === 'retourné') {
-            setRetoursData(updatedRetours.filter(retour => retour.id !== id));
-        } else {
-            setRetoursData(updatedRetours);
+            setRetoursData((prevData) =>
+                prevData.map((retour) =>
+                    retour.id === id ? { ...retour, statut: updatedEmprunt.statut } : retour
+                )
+            );
+        } catch (error) {
+            setAlertMessage("Erreur lors de la mise à jour du statut de l'emprunt.");
         }
     };
 
@@ -155,7 +137,6 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
             )}
 
             <div className="d-flex justify-content-end mb-3">
-                {/* Filtre des retours */}
                 <div>
                     <select
                         className="form-select form-select-sm"
@@ -164,7 +145,7 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                     >
                         <option value="tous">Tous</option>
                         <option value="en retard">En retard</option>
-                        <option value="en attente">En attente</option>
+                        <option value="en cours">En cours</option>
                     </select>
                 </div>
             </div>
@@ -173,49 +154,41 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                 <table className="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>CNE / Num de SOM</th>
+                            <th>Code</th>
+                            <th>Nom et Prénom</th>
                             <th>Titre du Livre</th>
                             <th>Date de Retour</th>
                             <th>Statut</th>
+                            <th>Action</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
-                        {currentItems.map(retour => (
+                        {currentItems.map((retour) => (
                             <tr key={retour.id}>
-                                <td>{retour.cne}</td>
-                                <td>{retour.titreLivre}</td>
-                                <td>{retour.dateRetour}</td>
+                                <td>{retour.utilisateur.code}</td>
+                                <td>{retour.utilisateur.nom} {retour.utilisateur.prenom}</td>
+                                <td>{retour.titreDocument}</td>
+                                <td>{new Date(retour.dateRetour).toLocaleDateString()}</td>
+
                                 <td>
-                                    <span className={`badge ${getStatutClass(retour.statut)} rounded-3 fs-10`}>
-                                        {retour.statut}
+                                    <span className={`badge ${getStatutClass(retour.statut).className} rounded-3 fs-10`}>
+                                        {getStatutClass(retour.statut).statutText}
                                     </span>
-                                    
-                                    {retour.statut === 'en retard' && (
-                                        <span className="badge bg-danger ms-2">
-                                            {calculateRetardDuration(retour.dateRetour)} jours de retard
+                                    {retour.statut === 'RETARD' && (
+                                        <span className="badge-retard bg-danger ms-2">
+                                            {calculateRetardDuration(retour.dateRetour)} jour(s) de retard
                                         </span>
                                     )}
-
-                                    <button
-                                        className="btn btn-sm btn-info ms-2"
-                                        onClick={() => setEditingStatut(retour.id)}
-                                    >
-                                        <i className="fa fa-pencil-alt"></i>
-                                    </button>
-
-                                    {editingStatut === retour.id && (
-                                        <select
-                                            value={retour.statut}
-                                            onChange={(e) => {
-                                                handleStatutChange(retour.id, e.target.value);
-                                                setEditingStatut(null);
-                                            }}
-                                            className="form-select form-select-sm ms-2"
+                                </td>
+                                <td>
+                                    {retour.statut !== 'RETOURNER' && (
+                                        <button
+                                            className="btn btn-sm btn-primary"
+                                            onClick={() => handleUpdateStatut(retour.id, retour.document.id)}
                                         >
-                                            <option value="retourné">Retourné</option>
-                                            <option value="en attente">En attente</option>
-                                            <option value="en retard">En retard</option>
-                                        </select>
+                                            Confirmer le retour
+                                        </button>
                                     )}
                                 </td>
                             </tr>

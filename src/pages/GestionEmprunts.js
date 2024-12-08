@@ -1,79 +1,108 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
-import '../styles/Emprunts.css';
-import { getAllReservations } from '../services/reservationService';
-import documentService from '../services/documentService'; 
-import userService from '../services/userService'; 
-import axios from 'axios';  // Add axios for HTTP requests
+import { getAllEmprunts } from '../services/empruntService';
+import documentService from '../services/documentService'; // Import du service
 
-const GestionEmprunts = () => {
+const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
-    const [reservationsData, setReservationsData] = useState([]);
+    const [retoursData, setRetoursData] = useState([]);
+    const [filter, setFilter] = useState('tous');
+    const [alertMessage, setAlertMessage] = useState('');
 
     useEffect(() => {
-        const fetchReservations = async () => {
+        const fetchEmpruntsWithDocuments = async () => {
             try {
-                const data = await getAllReservations();
-                const reservationsWithDetails = await Promise.all(
-                    data.map(async (reservation) => {
-                        const document = await documentService.getDocumentById(reservation.documentId);
-                        const user = await userService.getUserById(reservation.utilisateurId);
-                        return {
-                            ...reservation,
-                            titreDocument: document.titre || "Titre non disponible", 
-                            code: user?.code || "code non disponible", 
-                            nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible", 
-                        };
+                const emprunts = await getAllEmprunts();
+
+                // Récupération des titres pour chaque emprunt
+                const updatedEmprunts = await Promise.all(
+                    emprunts.map(async (retour) => {
+                        try {
+                            console.log(`Fetching document with ID: ${retour.documentId}`);
+                            const document = await documentService.getDocumentById(retour.document.id);
+                            
+                            return { ...retour, titreDocument: document.titre };
+                        } catch (error) {
+                            console.error(`Erreur lors de la récupération du document ${retour.documentId}`, error);
+                            return { ...retour, titreDocument: 'Titre inconnu' };
+                        }
                     })
                 );
 
-                const filteredReservations = reservationsWithDetails.filter(reservation => reservation.reservationStatus === 'ACCEPTED');
-                setReservationsData(filteredReservations);
-
-                // Send filtered data to backend
-                sendFilteredDataToBackend(filteredReservations);
+                setRetoursData(updatedEmprunts);
             } catch (error) {
-                console.error('Error fetching reservations:', error);
+                setAlertMessage('Erreur lors du chargement des emprunts.');
             }
         };
 
-        fetchReservations();
+        fetchEmpruntsWithDocuments();
     }, []);
 
-    // Function to send filtered reservations to backend
-    const sendFilteredDataToBackend = async (filteredReservations) => {
-        try {
-            await axios.post('/api/emprunts/saveFiltered', filteredReservations);
-            console.log("Filtered data saved successfully");
-        } catch (error) {
-            console.error("Error saving filtered data:", error);
-        }
-    };
+    const filteredRetours = retoursData.filter((retour) => {
+        if (filter === 'tous') return true;
+        return retour.statut === filter;
+    });
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = reservationsData.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(reservationsData.length / itemsPerPage);
+    const currentItems = filteredRetours.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredRetours.length / itemsPerPage);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const getStatutClass = (statut) => {
         switch (statut) {
-            case 'ACCEPTED':
+            case 'retourné':
                 return 'bg-success text-white';
-            case 'ENCOURS':
-                return 'bg-warning text-dark';
-            case 'REJECTED':
+            case 'en attente':
+                return 'bg-warning text-white';
+            case 'en retard':
                 return 'bg-danger text-white';
             default:
                 return '';
         }
     };
 
+    const handleMarkAsReturned = (id) => {
+        const updatedRetours = retoursData.map((retour) =>
+            retour.id === id ? { ...retour, statut: 'retourné' } : retour
+        );
+        setRetoursData(updatedRetours);
+    };
+
+    const calculateRetardDuration = (dateRetour) => {
+        const today = new Date();
+        const returnDate = new Date(dateRetour);
+        const timeDifference = today - returnDate;
+        const dayDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
+        return dayDifference > 0 ? dayDifference : 0;
+    };
+
     return (
         <div className="container">
+            {alertMessage && (
+                <div className="alert alert-danger alert-dismissible fade show mt-3 col-md-6 mx-auto" role="alert">
+                    {alertMessage}
+                    <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            )}
+
+            <div className="d-flex justify-content-end mb-3">
+                <div>
+                    <select
+                        className="form-select form-select-sm"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                    >
+                        <option value="tous">Tous</option>
+                        <option value="en retard">En retard</option>
+                        <option value="en attente">En attente</option>
+                    </select>
+                </div>
+            </div>
+
             <div className="table-wrapper">
                 <table className="table table-striped table-hover">
                     <thead>
@@ -81,22 +110,28 @@ const GestionEmprunts = () => {
                             <th>Code</th>
                             <th>Nom et Prénom</th>
                             <th>Titre du Livre</th>
-                            <th>Date de réservation</th>
+                            <th>Date d'emprunt</th>
                             <th>Statut</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {currentItems.map(reservation => (
-                            <tr key={reservation.id}>
-                                <td>{reservation.code}</td>
-                                <td>{reservation.nomPrenom}</td>
-                                <td>{reservation.titreDocument}</td>
-                                <td>{reservation.dateReservation}</td>
+                        {currentItems.map((retour) => (
+                            <tr key={retour.id}>
+                                <td>{retour.utilisateur.code}</td>
+                                <td>{retour.utilisateur.nom} {retour.utilisateur.prenom}</td>
+                                <td>{retour.titreDocument}</td>
+                                <td>{retour.dateEmprunt}</td>
                                 <td>
-                                    <span className={`badge ${getStatutClass(reservation.reservationStatus)} rounded-3`}>
-                                        {reservation.reservationStatus}
+                                    <span className={`badge ${getStatutClass(retour.statut)} rounded-3 fs-10`}>
+                                        {retour.statut}
                                     </span>
+                                    {retour.statut === 'en retard' && (
+                                        <span className="badge bg-danger ms-2">
+                                            {calculateRetardDuration(retour.dateRetour)} jours de retard
+                                        </span>
+                                    )}
                                 </td>
+                               
                             </tr>
                         ))}
                     </tbody>
@@ -122,4 +157,4 @@ const GestionEmprunts = () => {
     );
 };
 
-export default GestionEmprunts;
+export default GestionRetours;
