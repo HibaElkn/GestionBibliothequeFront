@@ -69,7 +69,10 @@ const Historique = () => {
                         dateAction: emprunt.dateRetour || emprunt.dateEmprunt,
                     }));
 
-                    const reservationsAvecType = await Promise.all(reservations.map(async (reservation) => {
+                    const reservationsAvecType = await Promise.all(
+                        reservations
+                        .filter(reservation => reservation.reservationStatus !== "ENCOURS")
+                        .map(async (reservation) => {
                         try {
                             const document = await documentService.getDocumentById(reservation.documentId); // Récupère le document
                             const user = await userService.getUserById(reservation.utilisateurId); // Récupère l'utilisateur
