@@ -43,6 +43,8 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
         
                 const today = new Date();
                 const todayFormatted = new Date(today.toLocaleDateString()); // Ignorer l'heure
+
+                
         
                 const updatedEmprunts = await Promise.all(
                     emprunts.map(async (retour) => {
@@ -56,10 +58,16 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                                // console.log('condition valiiiiiiiiide');
                                 await updateStatut(retour.id, 'RETARD');
                                 
+                                retour.statut = 'RETARD';
+                               // window.location.reload();   
                             }
                             if (borrowDateFormatted <= todayFormatted && retour.statut !== 'RETOURNER') {
                                // console.log('condition valiiiiiiiiide');
                                 await documentService.changeDocumentStatus(retour.document.id, 'NOT_EXIST');
+                               // const updatedEmprunts = await getAllEmprunts();
+                               // setRetoursData(updatedEmprunts);
+                                
+                               
                             }
         
                             return { ...retour, titreDocument: retour.document.titre };
@@ -69,6 +77,7 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                         }
                     })
                 );
+               
         
                 setRetoursData(updatedEmprunts);
             } catch (error) {
