@@ -53,31 +53,36 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
 
     const validateEditForm = () => {
         let formErrors = {};
+        const emailRegex = /^[^\s@]+@uhp\.ac\.ma$/; // Valide uniquement les emails du domaine uph.ac.ma
+    
         if (!editUser.email) {
             formErrors.email = 'Ce champ est requis';
-        } else if (!editUser.email.endsWith('@uhp.ac.ma')) {
-            formErrors.email = "L'email doit se terminer par '@uhp.ac.ma'";
+        } else if (!emailRegex.test(editUser.email)) {
+            formErrors.email = "L'email doit être au format 'xxx@uph.ac.ma'";
         }
         setErrors(formErrors);
         return Object.keys(formErrors).length === 0;
     };
+    
     
 
     
     const validateForm = () => {
         let formErrors = {};
+        const emailRegex = /^[^\s@]+@uhp\.ac\.ma$/; // Valide uniquement les emails du domaine uph.ac.ma
+    
         if (!newUser.code) formErrors.code = 'Ce champ est requis';
         if (!newUser.prenom) formErrors.prenom = 'Ce champ est requis';
         if (!newUser.nom) formErrors.nom = 'Ce champ est requis';
         if (!newUser.email) {
             formErrors.email = 'Ce champ est requis';
-        } else if (!newUser.email.endsWith('@uhp.ac.ma')) {
-            formErrors.email = "L'email doit se terminer par '@uhp.ac.ma'";
+        } else if (!emailRegex.test(newUser.email)) {
+            formErrors.email = "L'email doit être au format 'xxx@uph.ac.ma'";
         }
         setErrors(formErrors);
         return Object.keys(formErrors).length === 0;
     };
-
+    
     const handleSelectItem = (id) => {
         setSelectedItems(selectedItems.includes(id)
             ? selectedItems.filter(itemId => itemId !== id)
