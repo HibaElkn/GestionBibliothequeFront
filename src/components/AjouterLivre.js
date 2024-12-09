@@ -88,8 +88,27 @@ const AjouterLivre = () => {
                     <input type="text" name="descripteurs" value={livre.descripteurs} onChange={handleChange} />
                 </div>
                 <div className="button-container">
-                    <button type="button" className="btn btn-secondary" onClick={handleCancel}>Annuler</button>
-                    <button type="submit" className="btn btn-success">Ajouter</button>
+                <button type="submit" className="btn btn-success"
+                     style={{
+                        backgroundColor: '#004079ff',  
+                        color: 'white',              
+                        border: 'none',             
+                        padding: '10px 20px',        
+                        borderRadius: '10px',        
+                        fontSize: '16px',            
+                    }}>Ajouter</button>
+                    <button type="button" className="btn btn-secondary" onClick={handleCancel} style={{
+                                backgroundColor: '#f44336',  
+                                color: 'white',              
+                                border: 'none',             
+                                padding: '10px 20px',        
+                                borderRadius: '10px',
+                                border: 'none',
+                                fontSize: '16px',   
+                                    
+                            }}
+                            >Annuler</button>
+                    
                 </div>
             </form>
         </div>

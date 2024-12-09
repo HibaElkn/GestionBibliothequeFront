@@ -6,12 +6,12 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-left: 50px;
-    height: 150px;
+    margin-left: 200px;
+    height: 200px;
 }
 
 .small-text {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
 }
 
 .books-section .card:hover {
@@ -20,14 +20,14 @@
 }
 
 .books-section .card img {
-    height: 100px;
+    height: 150px;
     object-fit: cover;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
 
 .books-section .card-title {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
     color: #004080;
     margin-bottom: 8px;
@@ -42,7 +42,7 @@
 .books-section .card-text {
     color: #004080;
     margin-bottom: 8px;
-    font-size: 1rem;
+    font-size: 0.7rem;
 }
 
 .books-section .card-footer {

@@ -51,7 +51,7 @@ const UserBooks = ({ booksData }) => {
                             key={book.id}
                             book={book}
                             userId={userId}
-                            isEligible={isEligible} // Passer l'éligibilité en prop
+                            isEligible={isEligible} 
                         />
                     ))
                 ) : (

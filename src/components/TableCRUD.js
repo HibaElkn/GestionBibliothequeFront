@@ -17,7 +17,7 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
     const [itemToDelete, setItemToDelete] = useState(null);
     const [errors, setErrors] = useState({});  // Assurez-vous que cette ligne est présente
     const [selectedFile, setSelectedFile] = useState(null);  // État pour le fichier sélectionné
-
+    const [successMessage, setSuccessMessage] = useState('');
 
 
     const [newUser, setNewUser] = useState({ code: '', prenom: '', nom: '', email: '' });
@@ -111,7 +111,10 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
         }
         setShowDeletePopup(false);
     };
-
+    const handleResetPassword = () => {
+        setSuccessMessage('Mot de passe réinitialisé avec succès');
+        setShowEditUserPopup(false); 
+      };
     const openEditPopup = (user) => {
         setEditUser(user);
         setShowEditUserPopup(true);
@@ -268,7 +271,15 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
                         <input type="text" name="prenom" value={editUser.prenom} placeholder="Prénom" onChange={handleEditUserChange} />
                         <input type="text" name="nom" value={editUser.nom} placeholder="Nom" onChange={handleEditUserChange} />
                         <input type="email" name="email" value={editUser.email} placeholder="Email" onChange={handleEditUserChange} />
-                        <button className="btn btn-sm me-2" onClick={() => { onEdit(editUser); setShowEditUserPopup(false); }}>Enregistrer les modifications</button>
+                        <button className="btn btn-sm me-2" onClick={() => { onEdit(editUser); setShowEditUserPopup(false);}}
+                         style={{
+                                backgroundColor: '#004079ff',  
+                                color: 'white',              
+                                border: 'none',             
+                                padding: '10px 20px',        
+                                borderRadius: '5px',        
+                                fontSize: '16px',            
+                            }}>Enregistrer les modifications</button>
                         <button
                             className="btn btn-secondary mt-2"
                             onClick={() => setShowEditUserPopup(false)}
@@ -282,6 +293,20 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
                             }}
                             >
                             Annuler
+                        </button>
+                        <button
+                            className="btn btn-secondary mt-2"
+                            onClick={() => handleResetPassword(false)}
+                            style={{
+                                backgroundColor: '#D99A22ff',  
+                                color: 'white',              
+                                border: 'none',             
+                                padding: '10px 20px',        
+                                borderRadius: '5px',        
+                                fontSize: '16px',            
+                            }}
+                            >
+                            Reinitialiser le mot de passe
                         </button>
                     </div>
                 </div>

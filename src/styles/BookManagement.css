@@ -22,19 +22,22 @@ body {
     justify-content: flex-end;
 }
 
-/* Supprimer l'arrière-plan des icônes et définir une couleur */
 .btn i {
     background: none !important;  /* Enlever l'arrière-plan */
     color: inherit;  /* Couleur de l'icône héritée du texte du bouton */
-    font-size: 16px;  /* Taille de l'icône ajustée */
+    font-size: 14px;  /* Taille de l'icône ajustée */
     transition: color 0.3s ease;  /* Transition douce pour la couleur de l'icône */
 }
 
+
 .btn {
+    display: inline-block; /* Vérifiez que les boutons sont visibles */
+    visibility: visible;
+
     border: none;  /* Enlever les bordures des boutons */
     background: transparent;  /* Fond transparent */
-    padding: 8px 16px;  /* Espacement amélioré */
-    font-size: 14px;  /* Taille de police plus lisible */
+    padding: 8px 8px;  /* Espacement amélioré */
+    font-size: 8px;  /* Taille de police plus lisible */
     font-weight: 600;  /* Mettre le texte en gras pour plus de visibilité */
     border-radius: 5px;  /* Coins arrondis pour un effet plus doux */
     transition: background-color 0.3s ease, color 0.3s ease;  /* Transition fluide */
@@ -67,11 +70,13 @@ body {
 }
 
 .btn-danger {
-    background-color: #b31111;  /* Rouge de base */
-    color: white;  /* Texte en blanc */
-    padding: 8px 16px;  /* Espacement amélioré */
-    font-size: 14px;
+    background-color: #999;
+    color: white;
+    padding: 8px 16px;
+    font-size: 8px;
     border-radius: 5px;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .btn-danger:hover {
@@ -136,17 +141,6 @@ table.table-striped.table-hover tbody tr:hover {
     background: #004079ff; 
 }
 
-.btn-danger {
-   margin-left: 50px;
-    font-size: 14px; /* Ajuster la taille de la police */
-    border-radius: 5px; /* Ajouter des coins arrondis */
-    transition: background-color 0.3s ease; /* Animation de transition */
-}
-
-.btn-danger:hover {
-    background-color: #b31111; /* Couleur au survol */
-    border-color: #b31111; /* Bordure au survol */
-}
 
 .pagination .page-item .page-link {
     color: #004079ff;

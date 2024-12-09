@@ -70,51 +70,12 @@ const UserInterface = () => {
             {view === 'catalogue' && (
                 <>
                     <div className="row">
-                        <div className="col-md-3">
-                            {/* Filtres */}
-                            <div className="filter-section p-3 border rounded">
-                                <h5>Filtres</h5>
-                                <input
-                                    type="text"
-                                    className="form-control mb-3"
-                                    placeholder="Mots clés"
-                                    value={filters.keywords}
-                                    onChange={handleKeywordChange}
-                                />
-                                <div className="form-check mb-3">
-                                    <input
-                                        type="checkbox"
-                                        className="form-check-input"
-                                        checked={filters.availableOnly}
-                                        onChange={handleAvailabilityChange}
-                                    />
-                                    <label className="form-check-label">Exemplaire disponible</label>
-                                </div>
-                                <select
-                                    className="form-control mb-3"
-                                    value={filters.category}
-                                    onChange={(e) => handleFilterChange('category', e.target.value)}
-                                >
-                                    <option value="">Toutes les catégories</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                </select>
-                                <select
-                                    className="form-control mb-3"
-                                    value={filters.language}
-                                    onChange={(e) => handleFilterChange('language', e.target.value)}
-                                >
-                                    <option value="">Toutes les langues</option>
-                                    {languages.map((lang) => (
-                                        <option key={lang} value={lang}>{lang}</option>
-                                    ))}
-                                </select>
-                            </div>
+                        <div className="col-md-1">
+                
                         </div>
                         <div className="col-md-9">
                             <UserBooks booksData={currentBooks} />
-                            <nav className="mt-4">
+                            <nav className="mt-2">
                                 <ul className="pagination justify-content-center">
                                     {[...Array(totalPages).keys()].map((number) => (
                                         <li

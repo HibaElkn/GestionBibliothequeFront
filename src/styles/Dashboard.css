@@ -51,7 +51,10 @@
     flex-grow: 1;
     padding: 30px;
     background-color: #f7f7f7;
-    overflow-y: auto;
+  }
+  
+  .card, .chart, .doughnut-container {
+    overflow: hidden;
   }
   
   .stats-cards {
