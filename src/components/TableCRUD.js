@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../styles/UserManagement.css';
+import userService from '../services/userService';
+
     
 const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onDeleteSelected, onAdd, onImport }) => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -48,6 +50,18 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
             setSelectedFile(null);
         }
     };
+
+    const validateEditForm = () => {
+        let formErrors = {};
+        if (!editUser.email) {
+            formErrors.email = 'Ce champ est requis';
+        } else if (!editUser.email.endsWith('@uhp.ac.ma')) {
+            formErrors.email = "L'email doit se terminer par '@uhp.ac.ma'";
+        }
+        setErrors(formErrors);
+        return Object.keys(formErrors).length === 0;
+    };
+    
 
     
     const validateForm = () => {
@@ -111,10 +125,22 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
         }
         setShowDeletePopup(false);
     };
-    const handleResetPassword = () => {
-        setSuccessMessage('Mot de passe réinitialisé avec succès');
-        setShowEditUserPopup(false); 
-      };
+    const handleResetPassword = async () => {
+        try {
+            // Appeler le service pour changer le mot de passe
+            await userService.changeUserPassword(editUser.id, '123456');
+            
+            // Afficher un message de succès
+            setSuccessMessage('Mot de passe réinitialisé avec succès');
+        } catch (error) {
+            console.error('Erreur lors de la réinitialisation du mot de passe :', error);
+            setSuccessMessage('Échec de la réinitialisation du mot de passe');
+        } finally {
+            // Fermer la popup
+            setShowEditUserPopup(false);
+        }
+    };
+    
     const openEditPopup = (user) => {
         setEditUser(user);
         setShowEditUserPopup(true);
@@ -271,7 +297,14 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
                         <input type="text" name="prenom" value={editUser.prenom} placeholder="Prénom" onChange={handleEditUserChange} />
                         <input type="text" name="nom" value={editUser.nom} placeholder="Nom" onChange={handleEditUserChange} />
                         <input type="email" name="email" value={editUser.email} placeholder="Email" onChange={handleEditUserChange} />
-                        <button className="btn btn-sm me-2" onClick={() => { onEdit(editUser); setShowEditUserPopup(false);}}
+                        {errors.email && <div className="error-message">{errors.email}</div>}
+                        <button className="btn btn-sm me-2" onClick={() => {
+        if (validateEditForm()) {
+            onEdit(editUser);
+            setShowEditUserPopup(false);
+            setErrors({});
+        }
+    }}
                          style={{
                                 backgroundColor: '#004079ff',  
                                 color: 'white',              
@@ -295,19 +328,20 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
                             Annuler
                         </button>
                         <button
-                            className="btn btn-secondary mt-2"
-                            onClick={() => handleResetPassword(false)}
-                            style={{
-                                backgroundColor: '#D99A22ff',  
-                                color: 'white',              
-                                border: 'none',             
-                                padding: '10px 20px',        
-                                borderRadius: '5px',        
-                                fontSize: '16px',            
-                            }}
-                            >
-                            Reinitialiser le mot de passe
-                        </button>
+    className="btn btn-secondary mt-2"
+    onClick={handleResetPassword}
+    style={{
+        backgroundColor: '#D99A22ff',  
+        color: 'white',              
+        border: 'none',             
+        padding: '10px 20px',        
+        borderRadius: '5px',        
+        fontSize: '16px',            
+    }}
+>
+    Réinitialiser le mot de passe
+</button>
+
                     </div>
                 </div>
             )}
