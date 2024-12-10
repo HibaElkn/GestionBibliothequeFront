@@ -190,7 +190,7 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                         </button>
                         <button
                             className="btn btn-secondary mt-2"
-                            onClick={() => setShowImportPopup(false)} // Close the popup
+                            onClick={() => setShowImportPopup(false)} 
                         >
                             Annuler
                         </button>

@@ -179,3 +179,11 @@ table.table-striped.table-hover tbody tr:hover {
 .pagination .page-item {
     margin: 0 2px;
 }
+.btn-secondary {
+    background-color: #003066 ;
+    color: white; 
+    border: none;
+    padding: 10px 16px;
+    font-size: 12px; 
+    border-radius: 6px; 
+  }

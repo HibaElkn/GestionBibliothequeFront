@@ -45,6 +45,21 @@ const Profil = () => {
       console.error('Erreur de récupération des données utilisateur:', error);
     }
   };
+  //Fonction pour supprimer l'image de profil
+  const handleDeleteImage = async () => {
+    try {
+      // Appel à l'API pour supprimer l'image de profil
+      await userService.deletePhotoByUserId(userId);
+  
+      // Réinitialiser l'image à un placeholder
+      setImage('https://via.placeholder.com/150');
+      setSuccess('Image de profil supprimée avec succès.');
+      setImageChanged(false); // Réinitialiser l'état de l'image changée
+    } catch (error) {
+      setError('Erreur lors de la suppression de l\'image de profil.');
+      console.error('Erreur de suppression de l\'image :', error);
+    }
+  };
   
 
   // Fonction pour convertir le tableau d'octets en base64
@@ -140,12 +155,17 @@ const Profil = () => {
               alt="Image de profil"
               className="profil-image"
             />
+             <label htmlFor="file-upload" className="custom-file-upload">
+              Choisir une image
+            </label>
             <input
+              id="file-upload"
               type="file"
               onChange={handleImageChange}
               accept="image/*"
               className="image-upload"
             />
+            
           </div>
         </div>
 
