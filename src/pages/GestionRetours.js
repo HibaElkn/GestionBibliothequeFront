@@ -40,55 +40,49 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
         const fetchEmpruntsWithDocuments = async () => {
             try {
                 const emprunts = await getAllEmprunts();
-        
+    
                 const today = new Date();
-                const todayFormatted = new Date(today.toLocaleDateString()); // Ignorer l'heure
-
-                
-        
+                today.setHours(0, 0, 0, 0); // Reset time to ignore hours, minutes, and seconds
+    
                 const updatedEmprunts = await Promise.all(
                     emprunts.map(async (retour) => {
                         try {
                             const returnDate = new Date(retour.dateRetour);
                             const borrowDate = new Date(retour.dateEmprunt);
-                            const returnDateFormatted = new Date(returnDate.toLocaleDateString()); // Ignorer l'heure
-                            const borrowDateFormatted = new Date(borrowDate.toLocaleDateString());
-                            // Comparer uniquement les dates sans tenir compte de l'heure
-                            if (returnDateFormatted <= todayFormatted && retour.statut !== 'RETOURNER') {
-                               // console.log('condition valiiiiiiiiide');
-                                await updateStatut(retour.id, 'RETARD');
-                                
-                                retour.statut = 'RETARD';
-                               // window.location.reload();   
+                            returnDate.setHours(0, 0, 0, 0); // Reset time for comparison
+                            borrowDate.setHours(0, 0, 0, 0);
+    
+                            // Update status if return date is overdue
+                            if (returnDate <= today && retour.statut !== 'RETOURNER') {
+                                const updatedRetour = await updateStatut(retour.id, 'RETARD'); // Ensure backend is updated
+                                retour.statut = updatedRetour.statut; // Ensure the status is updated in state
                             }
-                            if (borrowDateFormatted <= todayFormatted && retour.statut !== 'RETOURNER') {
-                               // console.log('condition valiiiiiiiiide');
+    
+                            // Update document status if borrow date is overdue
+                            if (borrowDate <= today && retour.statut !== 'RETOURNER') {
                                 await documentService.changeDocumentStatus(retour.document.id, 'NOT_EXIST');
-                               // const updatedEmprunts = await getAllEmprunts();
-                               // setRetoursData(updatedEmprunts);
-                                
-                               
                             }
-        
+    
+                            // Add document title to the retour object
                             return { ...retour, titreDocument: retour.document.titre };
                         } catch (error) {
-                            console.error(`Erreur lors de la récupération du document ${retour.documentId}`, error);
+                            console.error(`Erreur lors du traitement de l'emprunt ${retour.id}:`, error);
                             return { ...retour, titreDocument: 'Titre inconnu' };
                         }
                     })
                 );
-               
-        
+    
+                // Update state with the processed emprunts
                 setRetoursData(updatedEmprunts);
             } catch (error) {
+                console.error('Erreur lors de la récupération des emprunts:', error);
                 setAlertMessage('Erreur lors du chargement des emprunts.');
             }
         };
-        
-
+    
         fetchEmpruntsWithDocuments();
-    }, []);
-
+    }, []); // Dependency array ensures this runs only once on component mount
+    
     const filteredRetours = retoursData.filter((retour) => {
         if (filter === 'tous') {
             return retour.statut === 'ATTENTE' || retour.statut === 'RETARD'; // Inclure "En cours" et "En retard"
@@ -101,7 +95,6 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
         }
         return false;
     });
-    
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -133,8 +126,16 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
         const returnDate = new Date(dateRetour);
         const timeDifference = today - returnDate;
         const dayDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
-        return dayDifference > 0 ? dayDifference : 0;
+        const delay = dayDifference > 0 ? dayDifference : 0;
+    
+        // Log the delay with three dots in the console
+        if (delay > 0) {
+            console.log(`Retard de ${delay} jour(s)`);
+        }
+    
+        return delay;
     };
+    
 
     return (
         <div className="container">
@@ -169,7 +170,6 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                             <th>Date de Retour</th>
                             <th>Statut</th>
                             <th>Action</th>
-                            
                         </tr>
                     </thead>
                     <tbody>
@@ -179,17 +179,20 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                                 <td>{retour.utilisateur.nom} {retour.utilisateur.prenom}</td>
                                 <td>{retour.titreDocument}</td>
                                 <td>{new Date(retour.dateRetour).toLocaleDateString()}</td>
-
                                 <td>
-                                    <span className={`badge ${getStatutClass(retour.statut).className} rounded-3 fs-10`}>
-                                        {getStatutClass(retour.statut).statutText}
-                                    </span>
-                                    {retour.statut === 'RETARD' && (
-                                        <span className="badge-retard bg-danger ms-2">
-                                            {calculateRetardDuration(retour.dateRetour)} jour(s) de retard
-                                        </span>
-                                    )}
-                                </td>
+    <span className={`badge ${getStatutClass(retour.statut).className} rounded-3 fs-10`}>
+        {getStatutClass(retour.statut).statutText}
+    </span>
+    {retour.statut === 'RETARD' && (
+        <span className="badge bg-danger ms-2 rounded-3 fs-10">
+            {calculateRetardDuration(retour.dateRetour)} jour(s) {/* Displaying three dots */}
+        </span>
+    )}
+</td>
+
+
+
+
                                 <td>
                                     {retour.statut !== 'RETOURNER' && (
                                         <button
