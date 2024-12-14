@@ -180,27 +180,33 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                                 <td>{retour.titreDocument}</td>
                                 <td>{new Date(retour.dateRetour).toLocaleDateString()}</td>
                                 <td>
-    <span className={`badge ${getStatutClass(retour.statut).className} rounded-3 fs-10`}>
-        {getStatutClass(retour.statut).statutText}
-    </span>
-    {retour.statut === 'RETARD' && (
-        <span className="badge bg-danger ms-2 rounded-3 fs-10">
-            {calculateRetardDuration(retour.dateRetour)} jour(s) {/* Displaying three dots */}
-        </span>
-    )}
-</td>
+                                <span className={`badge ${getStatutClass(retour.statut).className} rounded-3 fs-10`}>
+                                    {getStatutClass(retour.statut).statutText}
+                                </span>
+                                {retour.statut === 'RETARD' && (
+                                    <span className="badge bg-danger ms-2 rounded-3 fs-10">
+                                        {calculateRetardDuration(retour.dateRetour)} jour(s) {/* Displaying three dots */}
+                                    </span>
+                                )}
+                            </td>
 
 
 
 
                                 <td>
                                     {retour.statut !== 'RETOURNER' && (
-                                        <button
-                                            className="btn btn-sm btn-primary"
-                                            onClick={() => handleUpdateStatut(retour.id, retour.document.id)}
-                                        >
-                                            Confirmer le retour
-                                        </button>
+                                       <button
+                                       className="btn btn-sm btn-primary"
+                                       onClick={() => handleUpdateStatut(retour.id, retour.document.id)}
+                                       style={{
+                                           fontSize: '12px', 
+                                           padding: '4px 8px', 
+                                           height: 'auto', 
+                                       }}
+                                   >
+                                       Confirmer le retour
+                                   </button>
+                                   
                                     )}
                                 </td>
                             </tr>
