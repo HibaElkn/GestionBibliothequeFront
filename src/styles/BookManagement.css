@@ -25,22 +25,17 @@ body {
 .btn i {
     background: none !important;  /* Enlever l'arrière-plan */
     color: inherit;  /* Couleur de l'icône héritée du texte du bouton */
-    font-size: 14px;  /* Taille de l'icône ajustée */
-    transition: color 0.3s ease;  /* Transition douce pour la couleur de l'icône */
+    font-size: 15px;  /* Taille de l'icône ajustée */
 }
 
 
 .btn {
     display: inline-block; /* Vérifiez que les boutons sont visibles */
     visibility: visible;
-
     border: none;  /* Enlever les bordures des boutons */
     background: transparent;  /* Fond transparent */
-    padding: 8px 8px;  /* Espacement amélioré */
-    font-size: 8px;  /* Taille de police plus lisible */
-    font-weight: 600;  /* Mettre le texte en gras pour plus de visibilité */
-    border-radius: 5px;  /* Coins arrondis pour un effet plus doux */
-    transition: background-color 0.3s ease, color 0.3s ease;  /* Transition fluide */
+    padding: 2px 2px;  /* Espacement amélioré */
+    font-size: 12px;  /* Taille de police plus lisible */
 }
 
 
@@ -84,29 +79,30 @@ body {
     border-color: #ff3d3d;
 }
 
-/* Limiter la largeur des colonnes pour éviter d'afficher tout le texte */
-table.table td {
-    max-width: 150px;  /* Largeur maximale de chaque cellule */
-    text-overflow: ellipsis;  /* Afficher les points de suspension pour le texte trop long */
-    overflow: hidden;  /* Cacher le texte excédentaire */
-    white-space: nowrap;  /* Empêcher les sauts de ligne */
+/* Limiter la largeur des colonnes pour toutes sauf celles avec la classe "actions" */
+table.table td:not(.actions) {
+    min-width: max-content;  /* Largeur minimale basée sur le contenu */
+    max-width: 200px;        /* Largeur maximale (ajustez si nécessaire) */
+    text-overflow: ellipsis; /* Ajouter des points de suspension pour le texte trop long */
+    overflow: hidden;        /* Masquer le texte qui dépasse */
+    white-space: nowrap;     /* Empêcher les sauts de ligne */
 }
 
-/* Limiter la taille du titre et du sous-titre */
-td.titre, td.soustitre {
-    max-width: 200px;  /* Largeur maximale pour titre et sous-titre */
-    text-overflow: ellipsis;  /* Ajouter des points de suspension */
-    overflow: hidden;  /* Masquer l'excédent */
-    white-space: nowrap;  /* Ne pas casser les lignes */
+/* Aucune contrainte pour les cellules contenant des actions */
+td.actions {
+    white-space: nowrap;         /* Empêche les retours à la ligne pour les boutons */
+    min-width: fit-content;      /* Adapte la largeur au contenu */
+    gap: 0rem;                 /* Espacement minimal entre les boutons */
 }
+
 
 .table-title .btn-success:hover {
-    background-color: #D99A22ff; /* Jaune au survol */
+    background-color: #D99A22ff; 
     border-color: #D99A22ff;
 }
 
 table.table tr th {
-    background-color: #004079ff; /* Bleu */
+    background-color: #004079ff; 
     color: #fff;
 }
 
@@ -152,20 +148,20 @@ table.table-striped.table-hover tbody tr:hover {
 }
 
 .pagination .page-item.active .page-link {
-    background-color: #004079ff; /* Bleu de l'élément actif */
-    color: #fff; /* Couleur du texte actif */
+    background-color: #004079ff; 
+    color: #fff; 
     border-color: #004079ff;
 }
 
 .pagination .page-item.disabled .page-link {
-    color: #6c757d; /* Couleur du lien désactivé */
+    color: #6c757d; 
     background-color: #fff;
     border-color: #dee2e6;
     cursor: not-allowed;
 }
 
 .pagination .page-item .page-link:hover {
-    background-color: transparent ;/* Couleur de fond au survol */
+    background-color: transparent ;
     color: #fff;
 }
 
@@ -187,3 +183,16 @@ table.table-striped.table-hover tbody tr:hover {
     font-size: 12px; 
     border-radius: 6px; 
   }
+ 
+  .delete-button-container {
+    justify-content: flex-start; 
+    align-items: center;         
+    padding-left: 100px;        
+}
+
+
+button.btn {
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+}
