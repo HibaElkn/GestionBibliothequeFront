@@ -12,6 +12,7 @@ const AjouterLivre = () => {
         cote1: '',
         cote2: '',
         descripteurs: '',
+        nbrExmplaires:'',
         statut: 'EXIST',  // Default statut value as expected by the backend
         img: '',          // Default empty img value
     });
@@ -30,11 +31,12 @@ const AjouterLivre = () => {
         const livreAvecDescripteurs = {
             titre: livre.titre,
             auteurs: livre.auteur.split(',').map(a => a.trim()).filter(Boolean),  // Convert auteur to array for auteurs
-            sousTitre: livre.soustitre,  // Rename soustitre to sousTitre
+            sousTitre: livre.soustitre,  
             edition: livre.edition,
             cote1: livre.cote1,
             cote2: livre.cote2,
             descripteurs: livre.descripteurs.split(',').map(d => d.trim()).filter(Boolean),
+            nbrExmplaires: livre.nbrExmplaires,
             statut: livre.statut,
             img: livre.img,
         };
@@ -64,7 +66,7 @@ const AjouterLivre = () => {
                     <input type="text" name="titre" value={livre.titre} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label>Auteur (séparés par des virgules si plusieurs):</label>
+                    <label>Auteur :</label>
                     <input type="text" name="auteur" value={livre.auteur} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
@@ -84,8 +86,12 @@ const AjouterLivre = () => {
                     <input type="text" name="cote2" value={livre.cote2} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label>Descripteurs (séparés par des virgules):</label>
+                    <label>Descripteurs :</label>
                     <input type="text" name="descripteurs" value={livre.descripteurs} onChange={handleChange} />
+                </div>
+                <div className="form-group">
+                    <label>Nombre d'exemplaires :</label>
+                    <input type="text" name="nbrExemplaires" value={livre.nbrExmplaires} onChange={handleChange} />
                 </div>
                 <div className="button-container">
                 <button type="submit" className="btn btn-success"
