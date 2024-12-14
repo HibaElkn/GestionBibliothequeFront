@@ -219,12 +219,13 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                             <th>Cote1</th>
                             <th>Cote2</th>
                             <th>Descripteurs</th>
+                            <th>Nbr Ex</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
     {currentItems.map(item => {
-        console.log("Soustitre:", item.soustitre);  // Vérifiez le contenu de soustitre ici
+        console.log("Soustitre:", item.soustitre);  
 
         return (
             <tr key={item.id}>
@@ -249,45 +250,49 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                     <td>{item.cote1}</td>
                     <td>{item.cote2}</td>
                     <td>{item.descripteurs.join(', ')}</td>
-                    <td>
-                <Link 
-                    to={`/modifier-livre/${item.id}`} 
-                    className="btn btn-sm me-2" 
-                    style={{ 
-                        backgroundColor: 'transparent', 
-                        color: '#007bff',  // Icône bleue
-                    
-                    }}
-                >
-                    <i className="fas fa-edit"></i>
-                </Link>
-                <button
-                    className="btn btn-sm me-2"
-                    style={{ 
-                        backgroundColor: 'transparent', 
-                        color: '#dc3545',  // Icône rouge
-                    
-                    }}
-                    onClick={() => handleDelete(item.id)}
-                >
+                    <td>{item.nbrExemplaires}</td>
+
+                    <td className="actions">
+        <Link 
+            to={`/modifier-livre/${item.id}`} 
+            className="btn btn-sm me-2"
+            style={{
+                backgroundColor: 'transparent',
+                color: '#007bff'
+            }}
+        >
+            <i className="fas fa-edit"></i>
+        </Link>
+        <button
+            className="btn btn-sm"
+            style={{
+                backgroundColor: 'transparent',
+                color: '#dc3545'
+            }}
+            onClick={() => handleDelete(item.id)}
+        >
             <i className="fas fa-trash-alt"></i>
         </button>
-</td>
+    </td>
 
-            </tr>
-        );
-    })}
-</tbody>
+
+                        </tr>
+                    );
+                })}
+            </tbody>
 
                 </table>
             </div>
 
-            {/* Button to delete selected items */}
+           {/* Button to delete selected items */}
             {selectedItems.length > 0 && (
-                <button className="btn btn-danger btn-sm mt-2" onClick={handleDeleteSelected}>
-                    <i className="fas fa-trash-alt"></i> Supprimer les livres sélectionnés
-                </button>
+                <div className="delete-button-container">
+                    <button className="btn btn-danger btn-sm mt-2" onClick={handleDeleteSelected}>
+                        <i className="fas fa-trash-alt"></i> Supprimer les livres sélectionnés
+                    </button>
+                </div>
             )}
+
 
             {/* Pagination */}
             <nav>
