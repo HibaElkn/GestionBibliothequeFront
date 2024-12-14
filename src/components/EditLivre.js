@@ -172,6 +172,17 @@ const EditLivre = () => {
             required
           />
         </div>
+        <div className="form-group">
+          <label>Nombre d'exemplaires:</label>
+          <input
+            type="text"
+            name="nbrExemplaires"
+            value={livre.nbrExemplaires}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
         <div className="button-container">
           <button type="submit" className="btn-success">Mettre à jour</button>
           <button type="button" onClick={handleCancel} className="btn-cancel">Annuler</button>
