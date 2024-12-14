@@ -237,4 +237,30 @@ const documentService = {
     
 };
 
+    // Change document status
+    updateDocumentAvailability: async (id, newStatut) => {
+        checkBibliothecaireAccess(); // Vérifier l'accès
+
+        try {
+            const response = await fetch(`${API_URL}/changeStatus/${id}?newStatut=${newStatut}`, {
+                method: 'PUT',
+                headers: {
+                    ...defaultHeaders,
+                    Authorization: `Bearer ${getToken()}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to change document status: ${errorText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error changing document status:', error);
+            throw error;
+        }
+    };
+
+
 export default documentService;

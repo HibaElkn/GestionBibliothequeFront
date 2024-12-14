@@ -104,12 +104,12 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
             if (newStatut === 'ACCEPTED') {
                 // Calculer la date d'emprunt et la date de retour
                 const dateEmprunt = updatedReservation.dateReservation;
-                const dateRetour = new Date(dateEmprunt);
-                dateRetour.setDate(dateRetour.getDate() + 3); // Ajouter 3 jours à la date d'emprunt
+              //  const dateRetour = new Date(dateEmprunt);
+               // dateRetour.setDate(dateRetour.getDate() + 3); // Ajouter 3 jours à la date d'emprunt
                 
                 const emprunt = {
                     dateEmprunt: dateEmprunt,
-                    dateRetour: dateRetour.toISOString().split('T')[0], // Format ISO de la date de retour
+                   // dateRetour: dateRetour.toISOString().split('T')[0], // Format ISO de la date de retour
                 };
 
                 await saveEmprunt(updatedReservation.utilisateurId, documentId, emprunt); // Sauvegarder l'emprunt
@@ -185,5 +185,6 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
         </div>
     );
 };
+
 
 export default GestionReservations;
