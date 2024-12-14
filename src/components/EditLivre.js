@@ -14,78 +14,89 @@ const EditLivre = () => {
     cote1: '',
     cote2: '',
     descripteurs: '',
+    nbrExemplaire: '', // Géré comme une chaîne pour l'affichage
   });
   const [erreur, setErreur] = useState('');
-  const [confirmationVisible, setConfirmationVisible] = useState(false); // État pour gérer la boîte de confirmation
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
 
   useEffect(() => {
     const fetchLivre = async () => {
       try {
-        const response = await documentService.getDocumentById(id); // Appel pour récupérer le livre
-        console.log('Réponse complète:', response); // Afficher l'objet complet de la réponse dans la console pour débogage
-  
+        const response = await documentService.getDocumentById(id);
+        console.log('nommmmmmmmmmmbre22 : ', response.nbrExemplaire);
+
         if (response) {
-          // Vérifier si 'auteurs' existe et est un tableau, sinon le définir comme une chaîne vide
-          const auteurs = response.auteurs && Array.isArray(response.auteurs) ? response.auteurs.join(', ') : '';
-          
-          // Vérifier si 'descripteurs' existe et est un tableau, sinon le définir comme une chaîne vide
-          const descripteurs = response.descripteurs && Array.isArray(response.descripteurs) ? response.descripteurs.join(', ') : '';
-  
-          console.log('Auteurs:', auteurs); // Afficher les auteurs
-          console.log('Descripteurs:', descripteurs); // Afficher les descripteurs
-  
+          const auteurs = response.auteurs?.join(', ') || '';
+          const descripteurs = response.descripteurs?.join(', ') || '';
+
           setLivre({
-            ...response,
-            auteur: auteurs, // Affecter les auteurs sous forme de chaîne
-            descripteurs: descripteurs, // Affecter les descripteurs sous forme de chaîne
+            auteur: auteurs,
+            titre: response.titre || '',
+            soustitre: response.sousTitre || '',
+            edition: response.edition || '',
+            cote1: response.cote1 || '',
+            cote2: response.cote2 || '',
+            descripteurs: descripteurs,
+            nbrExemplaire: response.nbrExemplaire, // Convertir en chaîne
           });
+          
         } else {
           setErreur('Livre non trouvé');
         }
       } catch (error) {
         setErreur(`Une erreur est survenue lors de la récupération du livre: ${error.message}`);
-        console.error('Erreur lors de la récupération du livre :', error); // Afficher l'erreur complète dans la console
       }
     };
-  
+
     if (id) {
-      fetchLivre(); // Appeler la fonction si l'ID est défini
+      fetchLivre();
     }
   }, [id]);
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setLivre({ ...livre, [name]: value });
+    setLivre((prev) => ({
+      ...prev,
+      [name]: value, // Toujours stocker la valeur en tant que chaîne
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Vérifier que l'auteur et le titre ne sont pas vides
       if (!livre.auteur || !livre.titre) {
         setErreur("L'auteur et le titre sont obligatoires.");
         return;
       }
 
-      // Convertir la chaîne d'auteurs en un tableau (séparé par des virgules)
-      const auteursArray = livre.auteur.split(',').map(auteur => auteur.trim());
+      // Validation du nombre d'exemplaires
+      const nbrExemplaire = parseInt(livre.nbrExemplaire, 10);
+      if (isNaN(nbrExemplaire) || nbrExemplaire <= 0) {
+        setErreur('Le nombre d’exemplaires doit être un nombre positif supérieur à zéro.');
+        return;
+      }
 
+      // Conversion des auteurs et descripteurs en tableau
+      const auteursArray = livre.auteur.split(',').map((auteur) => auteur.trim());
+      const descripteursArray = livre.descripteurs.split(',').map((d) => d.trim());
+
+      // Préparation des données pour l'envoi
       const documentData = {
-        auteurs: auteursArray,  // Assurez-vous d'envoyer un tableau d'auteurs
+        auteurs: auteursArray,
         titre: livre.titre,
         sousTitre: livre.soustitre,
         edition: livre.edition,
         cote1: livre.cote1,
         cote2: livre.cote2,
-        descripteurs: livre.descripteurs.split(',').map(d => d.trim()), // Idem pour les descripteurs
-        statut: "EXIST", 
-        img: "base64EncodedImageHere" // Dynamique si nécessaire
+        descripteurs: descripteursArray,
+        statut: 'EXIST',
+        img: 'base64EncodedImageHere', // Remplacez par une vraie image si nécessaire
+        nbrExemplaire: parseInt(livre.nbrExemplaire), // Envoyé en tant qu'entier
       };
-
-      console.log('Document Data:', documentData);  // Vérifier les données envoyées
+      console.log('docdataaaa', documentData);
 
       await documentService.updateDocument(id, documentData);
-      setConfirmationVisible(true);  // Afficher la confirmation
+      setConfirmationVisible(true);
     } catch (error) {
       setErreur('Une erreur est survenue lors de la mise à jour');
       console.error('Erreur lors de la mise à jour du document:', error);
@@ -93,12 +104,12 @@ const EditLivre = () => {
   };
 
   const handleCancel = () => {
-    navigate('/gestion-livre'); // Rediriger vers la page des livres
+    navigate('/gestion-livre');
   };
 
   const handleConfirmationClose = () => {
     setConfirmationVisible(false);
-    navigate('/gestion-livre'); // Redirect to the desired route after confirmation
+    navigate('/gestion-livre');
   };
 
   return (
@@ -175,9 +186,9 @@ const EditLivre = () => {
         <div className="form-group">
           <label>Nombre d'exemplaires:</label>
           <input
-            type="text"
-            name="nbrExemplaires"
-            value={livre.nbrExemplaires}
+            type="number"
+            name="nbrExemplaire"
+            value={livre.nbrExemplaire}
             onChange={handleChange}
             required
           />

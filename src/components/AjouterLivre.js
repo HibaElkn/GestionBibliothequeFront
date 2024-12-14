@@ -12,7 +12,7 @@ const AjouterLivre = () => {
         cote1: '',
         cote2: '',
         descripteurs: '',
-        nbrExmplaires:'',
+        nbrExemplaire:'',
         statut: 'EXIST',  // Default statut value as expected by the backend
         img: '',          // Default empty img value
     });
@@ -36,7 +36,7 @@ const AjouterLivre = () => {
             cote1: livre.cote1,
             cote2: livre.cote2,
             descripteurs: livre.descripteurs.split(',').map(d => d.trim()).filter(Boolean),
-            nbrExmplaires: livre.nbrExmplaires,
+            nbrExemplaire: livre.nbrExemplaire,
             statut: livre.statut,
             img: livre.img,
         };
@@ -91,7 +91,7 @@ const AjouterLivre = () => {
                 </div>
                 <div className="form-group">
                     <label>Nombre d'exemplaires :</label>
-                    <input type="text" name="nbrExemplaires" value={livre.nbrExmplaires} onChange={handleChange} />
+                    <input type="number" name="nbrExemplaire" value={livre.nbrExemplaire} onChange={handleChange} />
                 </div>
                 <div className="button-container">
                 <button type="submit" className="btn btn-success"

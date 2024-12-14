@@ -130,7 +130,8 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                         cote2: trimmedItem['Cote2'] || '',
                         descripteurs: trimmedItem['Descripteurs'] ? trimmedItem['Descripteurs'].split('/').map(descriptor => descriptor.trim()) : [],
                         statut: 'EXIST',
-                        img: 'base64EncodedImageHere'
+                        img: 'base64EncodedImageHere',
+                        nbrExemplaire: parseInt(trimmedItem['Nbr Ex']) || 1,
                     };
                 });
     
@@ -250,7 +251,7 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                     <td>{item.cote1}</td>
                     <td>{item.cote2}</td>
                     <td>{item.descripteurs.join(', ')}</td>
-                    <td>{item.nbrExemplaires}</td>
+                    <td>{item.nbrExemplaire}</td>
 
                     <td className="actions">
         <Link 
