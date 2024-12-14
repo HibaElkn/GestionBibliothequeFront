@@ -130,19 +130,30 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
         }
         setShowDeletePopup(false);
     };
-    const handleResetPassword = async () => {
+    const [showPopup, setShowPopup] = useState(false);
+
+    const togglePopup = () => {
+      setShowPopup(!showPopup);
+    };
+
+   const handleResetPassword = async () => {
         try {
-            // Appeler le service pour changer le mot de passe
+         
             await userService.changeUserPassword(editUser.id, '123456');
             
-            // Afficher un message de succès
+            
             setSuccessMessage('Mot de passe réinitialisé avec succès');
         } catch (error) {
             console.error('Erreur lors de la réinitialisation du mot de passe :', error);
             setSuccessMessage('Échec de la réinitialisation du mot de passe');
         } finally {
-            // Fermer la popup
-            setShowEditUserPopup(false);
+          
+            setShowPopup(true);
+
+            setTimeout(() => {
+                setShowPopup(false);
+                setShowEditUserPopup(false); 
+            }, 3000); 
         }
     };
     
@@ -333,20 +344,37 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
                             Annuler
                         </button>
                         <button
-    className="btn btn-secondary mt-2"
-    onClick={handleResetPassword}
-    style={{
-        backgroundColor: '#D99A22ff',  
-        color: 'white',              
-        border: 'none',             
-        padding: '10px 20px',        
-        borderRadius: '5px',        
-        fontSize: '16px',            
-    }}
->
-    Réinitialiser le mot de passe
-</button>
-
+                        className="btn btn-secondary mt-2"
+                        onClick={handleResetPassword}
+                        style={{
+                            backgroundColor: '#D99A22ff',  
+                            color: 'white',              
+                            border: 'none',             
+                            padding: '10px 20px',        
+                            borderRadius: '5px',        
+                            fontSize: '16px',            
+                        }}
+                    >
+                        Réinitialiser le mot de passe
+                    </button>
+                    {showPopup && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: '20%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        backgroundColor: '#4caf50',
+                        color: 'white',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                        zIndex: 1000,
+                    }}
+                >
+                    Mot de passe réinitialisé avec succès !
+                </div>
+            )}
                     </div>
                 </div>
             )}
