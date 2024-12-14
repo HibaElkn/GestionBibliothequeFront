@@ -153,7 +153,6 @@ const Historique = () => {
         <div className="container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <div className="ms-auto">
-                    <label htmlFor="filter" className="me-2" style={{ color: '#004079' }}>Filtrer par type :</label>
                     <select
                         id="filter"
                         className="form-select d-inline-block w-auto"
