@@ -1,5 +1,6 @@
+/* Conteneur du formulaire principal */
 .ajouter-livre-container {
-    width: 600px; 
+    width: 800px; 
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -14,44 +15,62 @@
     transform: scale(1.02); 
 }
 
+/* Titre du formulaire */
 h2 {
     text-align: center;
     color: #004079ff;
     margin-bottom: 20px; 
 }
 
+/* Conteneur de chaque groupe de formulaire */
 .form-group {
-    margin-bottom: 15px;
+    display: flex;               
+    justify-content: space-between; 
+    align-items: center;        
+    margin-bottom: 15px;         
+    color: #004079ff;
+
 }
 
+/* Style du label */
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 0;            /* Enlever l'espacement en bas du label */
     font-weight: bold;
-    color: #004079ff; 
+    color: #004079ff;
+    width: 25%;                  /* Réduire la largeur du label */
 }
 
+/* Style pour les champs de saisie (input et textarea) */
 input[type="text"],
 textarea {
-    width: 100%;
+    width: 70%;                  /* La largeur des champs de texte s'adapte aux 70% restants */
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    transition: border-color 0.3s; 
+    transition: border-color 0.3s;
 }
 
+/* Effet de focus pour les champs de saisie */
 input[type="text"]:focus,
 textarea:focus {
-    border-color: #004079ff; 
-    outline: none; 
+    border-color: #004079ff;
+    outline: none;
 }
 
+/* Style pour les textarea pour pouvoir les redimensionner verticalement */
+textarea {
+    resize: vertical;
+}
+
+/* Conteneur pour les boutons (annuler, valider, etc.) */
 .button-container {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
 }
 
+/* Style pour les boutons */
 button {
     padding: 10px 20px;
     border: none;
@@ -61,26 +80,31 @@ button {
     transition: background-color 0.3s, transform 0.2s; 
 }
 
+/* Bouton success (valider) */
 .btn-success {
     background-color: #28a745;
     color: white;
 }
 
+/* Bouton secondaire (annuler ou autres) */
 .btn-secondary {
     background-color: #004079ff;
     color: white;
 }
 
+/* Effet de hover pour le bouton success */
 .btn-success:hover {
     background-color: #218838;
     transform: scale(1.05); 
 }
 
+/* Effet de hover pour le bouton secondaire */
 .btn-secondary:hover {
     background-color: #5a6268;
     transform: scale(1.05); 
 }
 
+/* Style pour les alertes */
 .alert {
     color: #dc3545;
     margin-bottom: 20px; 
@@ -91,8 +115,4 @@ button {
 .form-group input[type="text"],
 .form-group textarea {
     margin-bottom: 10px; 
-}
-
-textarea {
-    resize: vertical; 
 }
