@@ -1,6 +1,6 @@
 /* Conteneur du formulaire principal */
 .ajouter-livre-container {
-    width: 800px; 
+    width: 700px; 
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -9,6 +9,8 @@
     margin: auto;
     margin-top: 20px;
     transition: transform 0.3s;
+    color: #004079ff;
+    height: fit-content;
 }
 
 .ajouter-livre-container:hover {
@@ -24,35 +26,39 @@ h2 {
 
 /* Conteneur de chaque groupe de formulaire */
 .form-group {
-    display: flex;               
+    display: flex;
     justify-content: space-between; 
     align-items: center;        
     margin-bottom: 15px;         
     color: #004079ff;
-
 }
 
 /* Style du label */
 label {
     display: block;
-    margin-bottom: 0;            /* Enlever l'espacement en bas du label */
+    margin-bottom: 0;
     font-weight: bold;
     color: #004079ff;
-    width: 25%;                  /* Réduire la largeur du label */
+    width: 30%;                  /* Réduire légèrement la largeur du label */
 }
 
 /* Style pour les champs de saisie (input et textarea) */
 input[type="text"],
+input[type="number"],
+input[type="file"],
 textarea {
-    width: 70%;                  /* La largeur des champs de texte s'adapte aux 70% restants */
+    width: 75%;                  /* La largeur des champs de texte s'adapte aux 65% restants */
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    background-color: #f9f9f9;
     transition: border-color 0.3s;
 }
 
 /* Effet de focus pour les champs de saisie */
 input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="file"]:focus,
 textarea:focus {
     border-color: #004079ff;
     outline: none;
@@ -61,6 +67,61 @@ textarea:focus {
 /* Style pour les textarea pour pouvoir les redimensionner verticalement */
 textarea {
     resize: vertical;
+}
+
+/* Style pour les champs de saisie de type number en cas d'erreur */
+input[type="number"]:invalid {
+    border-color: #007bff;/* Couleur de bordure rouge en cas d'erreur */
+}
+
+/* Style pour les champs de saisie de type number quand ils sont désactivés */
+input[type="number"]:disabled {
+    background-color: #f0f0f0;
+    border-color: #ddd;
+    cursor: not-allowed;
+}
+
+/* Style pour les champs de fichier */
+input[type="file"] {
+    cursor: pointer;
+}
+
+/* Ajout de style pour les fichiers sélectionnés */
+input[type="file"]:hover {
+    border-color: #004079ff;
+}
+
+/* Style pour l'étiquette du fichier choisi (optionnel) */
+input[type="file"]::file-selector-button {
+    background-color: #004079ff;
+    color: white;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+/* Changer la couleur au survol de l'étiquette du bouton */
+input[type="file"]::file-selector-button:hover {
+    background-color: #5a6268;
+}
+
+/* Styles pour une version plus esthétique du bouton */
+input[type="file"]::-webkit-file-upload-button {
+    background-color: #004079ff;
+    color: white;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    transition: background-color 0.3s;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: #5a6268;
 }
 
 /* Conteneur pour les boutons (annuler, valider, etc.) */
@@ -109,10 +170,4 @@ button {
     color: #dc3545;
     margin-bottom: 20px; 
     font-weight: bold;
-}
-
-/* Espacement autour des éléments de formulaire */
-.form-group input[type="text"],
-.form-group textarea {
-    margin-bottom: 10px; 
 }
