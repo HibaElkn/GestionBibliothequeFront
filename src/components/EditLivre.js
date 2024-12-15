@@ -116,14 +116,20 @@ const EditLivre = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setLivre({ ...livre, img: reader.result });
-            console.log("Image Base64:", reader.result);  // Log base64 data
-        };
-        reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        let base64String = reader.result;
+        
+        // Supprimer la partie 'data:image/jpeg;base64,' si elle existe
+        base64String = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
+        
+        setLivre({ ...livre, img: base64String });
+        console.log("Image Base64 sans le préfixe :", base64String);  // Log base64 data sans préfixe
+      };
+      reader.readAsDataURL(file);
     }
-};
+  };
+  
 
   return (
     <div className="modifier-livre-container">
