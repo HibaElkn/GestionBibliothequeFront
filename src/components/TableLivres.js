@@ -15,6 +15,8 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
     const [tableData, setTableData] = useState([]); // Store documents
     const [selectedFile, setSelectedFile] = useState(null); // State to store the selected file
     const [showImportPopup, setShowImportPopup] = useState(false); // State to toggle import popup
+    const [showDeletePopup, setShowDeletePopup] = useState(false); // State to toggle delete popup
+    const [selectedDeleteItems, setSelectedDeleteItems] = useState([]); // Track items to delete
 
     useEffect(() => {
         const getDocuments = async () => {
@@ -22,8 +24,6 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                 setLoading(true);  
                 const documents = await documentService.getAllDocuments();  
                 setTableData(documents);  
-    
-           
                 if (onAddBooks) {
                     onAddBooks(documents);
                 }
@@ -34,7 +34,6 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                 setLoading(false);  
             }
         };
-    
         getDocuments();  
     }, []);  
     
@@ -59,38 +58,38 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
     };
 
     // Handle delete selected items
-    const handleDeleteSelected = async () => {
-        if (window.confirm("Êtes-vous sûr de vouloir supprimer les éléments sélectionnés ?")) {
-            try {
-                // Make the API call to delete selected items
-                await documentService.deleteDocuments(selectedItems);
-    
-                // Update the table data by filtering out deleted items
-                setTableData(prevData => prevData.filter(item => !selectedItems.includes(item.id)));
-    
-                // Clear selected items
-                setSelectedItems([]);
-            } catch (error) {
-                console.error("Error deleting selected documents:", error);
-                alert("Erreur lors de la suppression des livres sélectionnés.");
-            }
+    const handleDeleteSelected = () => {
+        setSelectedDeleteItems(selectedItems);
+        setShowDeletePopup(true); // Show delete confirmation popup
+    };
+
+    const confirmDeleteSelected = async () => {
+        try {
+            await documentService.deleteDocuments(selectedDeleteItems);
+            setTableData(prevData => prevData.filter(item => !selectedDeleteItems.includes(item.id)));
+            setSelectedItems([]); // Clear selected items after deletion
+            setShowDeletePopup(false); // Close the popup
+        } catch (error) {
+            console.error("Error deleting selected documents:", error);
+            alert("Erreur lors de la suppression des livres sélectionnés.");
         }
     };
-    
 
     // Handle file change for importing data
     const handleFileChange = (e) => {
-        setSelectedFile(e.target.files[0]); // Set the selected file when it changes
+        setSelectedFile(e.target.files[0]);
     };
+
     const handleDelete = async (id) => {
+        setShowDeletePopup(true); // Show delete confirmation popup
+        setSelectedDeleteItems([id]); // Set the item to be deleted
+    };
+
+    const confirmDelete = async () => {
         try {
-            // Delete the document via the service
-            await documentService.deleteDocument(id);
-
-            // Update the tableData state to remove the deleted item
-            setTableData((prevData) => prevData.filter((item) => item.id !== id));
-
-            alert("Document supprimé avec succès.");
+            await documentService.deleteDocument(selectedDeleteItems[0]);
+            setTableData(prevData => prevData.filter(item => item.id !== selectedDeleteItems[0]));
+            setShowDeletePopup(false); // Close the popup
         } catch (error) {
             console.error("Error deleting document:", error);
             alert("Erreur lors de la suppression du document.");
@@ -100,90 +99,51 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
     const handleImport = () => {
         if (selectedFile) {
             const reader = new FileReader();
-    
-            reader.onload = async (e) => {
+            reader.onload = (e) => {
                 const data = e.target.result;
                 const workbook = XLSX.read(data, { type: 'binary' });
-    
+
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
-    
+
                 const jsonData = XLSX.utils.sheet_to_json(sheet);
-                console.log('Raw Imported JSON Data:', jsonData);
-    
-                // Helper function to convert image file paths to base64
-                const convertImageToBase64 = (filePath) => {
-                    return new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.src = filePath;
-    
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = img.width;
-                            canvas.height = img.height;
-    
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0);
-                            const base64String = canvas.toDataURL('image/png');
-                            resolve(base64String);
-                        };
-    
-                        img.onerror = (error) => reject(error);
-                    });
-                };
-    
-                const cleanedData = await Promise.all(
-                    jsonData.map(async (item) => {
-                        const trimmedItem = {};
-                        for (let key in item) {
-                            if (item.hasOwnProperty(key)) {
-                                const trimmedKey = key.trim();
-                                trimmedItem[trimmedKey] = item[key];
-                            }
+                const cleanedData = jsonData.map(item => {
+                    const trimmedItem = {};
+                    for (let key in item) {
+                        if (item.hasOwnProperty(key)) {
+                            const trimmedKey = key.trim();
+                            trimmedItem[trimmedKey] = item[key];
                         }
-    
-                        const sousTitre = trimmedItem['Sous titre'] || '';
-                        const imgBase64 = trimmedItem['Image']
-                            ? await convertImageToBase64(trimmedItem['Image'])
-                            : ''; // Convert the image file path to base64
-    
-                        return {
-                            auteurs: trimmedItem['AUTEUR(S)'] ? trimmedItem['AUTEUR(S)'].split(',').map((author) => author.trim()) : [],
-                            titre: trimmedItem['TITRE(S)'] || '',
-                            sousTitre: sousTitre,
-                            edition: trimmedItem['Edition'] || '',
-                            cote1: trimmedItem['Cote1'] || '',
-                            cote2: trimmedItem['Cote2'] || '',
-                            descripteurs: trimmedItem['Descripteurs'] ? trimmedItem['Descripteurs'].split('/').map((descriptor) => descriptor.trim()) : [],
-                            statut: 'EXIST',
-                            img: imgBase64, // Use the converted base64 string
-                            nbrExemplaire: parseInt(trimmedItem['Nbr Ex']) || 1,
-                        };
+                    }
+
+                    const sousTitre = trimmedItem['Sous titre'] || '';
+                    return {
+                        auteurs: trimmedItem['AUTEUR(S)'] ? trimmedItem['AUTEUR(S)'].split(',').map(author => author.trim()) : [],
+                        titre: trimmedItem['TITRE(S)'] || '',
+                        sousTitre: sousTitre,
+                        edition: trimmedItem['Edition'] || '',
+                        cote1: trimmedItem['Cote1'] || '',
+                        cote2: trimmedItem['Cote2'] || '',
+                        descripteurs: trimmedItem['Descripteurs'] ? trimmedItem['Descripteurs'].split('/').map(descriptor => descriptor.trim()) : [],
+                        statut: 'EXIST',
+                        img: 'base64EncodedImageHere',
+                        nbrExemplaire: parseInt(trimmedItem['Nbr Ex']) || 1,
+                    };
+                });
+
+                documentService.saveDocuments(cleanedData)
+                    .then(response => {
+                        setTableData(prevData => [...prevData, ...cleanedData]);
+                        setShowImportPopup(false);
                     })
-                );
-    
-                console.log('Cleaned Data:', cleanedData);
-    
-                documentService
-                    .saveDocuments(cleanedData)
-                    .then((response) => {
-                        console.log('Documents successfully saved:', response);
-    
-                        // Update the tableData state with new documents
-                        setTableData((prevData) => [...prevData, ...cleanedData]);
-    
-                        setShowImportPopup(false); // Close the popup
-                    })
-                    .catch((error) => {
+                    .catch(error => {
                         console.error('Error saving documents:', error);
                     });
             };
-    
             reader.readAsBinaryString(selectedFile);
         }
     };
-    
-    
+
     // Show loading or error messages if necessary
     if (loading) {
         return <div>Loading...</div>;
@@ -196,7 +156,6 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
     return (
         <div className="container">
             <div className="table-title">
-                {/* Button to show the import popup */}
                 <button className="btn btn-success btn-sm me-2" onClick={() => setShowImportPopup(true)}>
                     <i className="fas fa-file-import"></i> Importer tous les livres
                 </button>
@@ -220,10 +179,33 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                         </button>
                         <button
                             className="btn btn-secondary mt-2"
-                            onClick={() => setShowImportPopup(false)} // Close the popup
+                            onClick={() => setShowImportPopup(false)}
                         >
                             Annuler
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete confirmation popup */}
+            {showDeletePopup && (
+                <div className="popup">
+                    <div className="popup-content">
+                        <h5>Êtes-vous sûr de vouloir supprimer ce(s) livre(s)?</h5>
+                        <div class="btn-container">
+
+
+                        <button className="btn btn-danger mt-2" onClick={selectedDeleteItems.length === 1 ? confirmDelete : confirmDeleteSelected}>
+                            Confirmer
+                        </button>
+                        <button
+                            className="btn btn-secondary mt-2"
+                            onClick={() => setShowDeletePopup(false)}
+                        >
+                            Annuler
+                        </button>
+                        </div>
+
                     </div>
                 </div>
             )}
@@ -254,67 +236,41 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                         </tr>
                     </thead>
                     <tbody>
-    {currentItems.map(item => {
-        console.log("Soustitre:", item.soustitre);  
-
-        return (
-            <tr key={item.id}>
-                <td>
-                    <span className="custom-checkbox">
-                        <input
-                            type="checkbox"
-                            checked={selectedItems.includes(item.id)}
-                            onChange={() => handleSelectItem(item.id)}
-                        />
-                        <label></label>
-                    </span>
-                </td>
-                <td>{item.auteurs.join(', ')}</td>
-                <td>{item.titre}</td>
-                <td>
-                    {item.soustitre && item.soustitre.trim() !== "" 
-                        ? item.soustitre.trim() 
-                        : "Non précisé"}  {/* Affiche "Non précisé" si soustitre est vide */}
-                    </td>
-                    <td>{item.edition}</td>
-                    <td>{item.cote1}</td>
-                    <td>{item.cote2}</td>
-                    <td>{item.descripteurs.join(', ')}</td>
-                    <td>{item.nbrExemplaire}</td>
-
-                    <td className="actions">
-        <Link 
-            to={`/modifier-livre/${item.id}`} 
-            className="btn btn-sm me-2"
-            style={{
-                backgroundColor: 'transparent',
-                color: '#007bff'
-            }}
-        >
-            <i className="fas fa-edit"></i>
-        </Link>
-        <button
-            className="btn btn-sm"
-            style={{
-                backgroundColor: 'transparent',
-                color: '#dc3545'
-            }}
-            onClick={() => handleDelete(item.id)}
-        >
-            <i className="fas fa-trash-alt"></i>
-        </button>
-    </td>
-
-
-                        </tr>
-                    );
-                })}
-            </tbody>
-
+                        {currentItems.map(item => (
+                            <tr key={item.id}>
+                                <td>
+                                    <span className="custom-checkbox">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedItems.includes(item.id)}
+                                            onChange={() => handleSelectItem(item.id)}
+                                        />
+                                        <label></label>
+                                    </span>
+                                </td>
+                                <td>{item.auteurs.join(', ')}</td>
+                                <td>{item.titre}</td>
+                                <td>{item.soustitre || 'Non précisé'}</td>
+                                <td>{item.edition}</td>
+                                <td>{item.cote1}</td>
+                                <td>{item.cote2}</td>
+                                <td>{item.descripteurs.join(', ')}</td>
+                                <td>{item.nbrExemplaire}</td>
+                                <td className="actions">
+                                    <Link to={`/modifier-livre/${item.id}`} className="btn btn-sm me-2" style={{ backgroundColor: 'transparent', color: '#007bff' }}>
+                                        <i className="fas fa-edit"></i>
+                                    </Link>
+                                    <button className="btn btn-sm" style={{ backgroundColor: 'transparent', color: '#dc3545' }} onClick={() => handleDelete(item.id)}>
+                                        <i className="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
                 </table>
             </div>
 
-           {/* Button to delete selected items */}
+            {/* Button to delete selected items */}
             {selectedItems.length > 0 && (
                 <div className="delete-button-container">
                     <button className="btn btn-danger btn-sm mt-2" onClick={handleDeleteSelected}>
@@ -322,7 +278,6 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                     </button>
                 </div>
             )}
-
 
             {/* Pagination */}
             <nav>
