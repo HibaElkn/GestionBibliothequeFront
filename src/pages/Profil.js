@@ -138,6 +138,7 @@ const Profil = () => {
     if (imageChanged || passwordChanged) {
       handleSaveImage();
       alert('Changements enregistrés !');
+      window.location.reload();
       // Implémenter la logique pour sauvegarder les autres changements ici
     } else {
       handleSaveImage();

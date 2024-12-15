@@ -14,7 +14,8 @@ const EditLivre = () => {
     cote1: '',
     cote2: '',
     descripteurs: '',
-    nbrExemplaire: '', // Géré comme une chaîne pour l'affichage
+    nbrExemplaire: '',
+    img:'' // Géré comme une chaîne pour l'affichage
   });
   const [erreur, setErreur] = useState('');
   const [confirmationVisible, setConfirmationVisible] = useState(false);
@@ -37,7 +38,8 @@ const EditLivre = () => {
             cote1: response.cote1 || '',
             cote2: response.cote2 || '',
             descripteurs: descripteurs,
-            nbrExemplaire: response.nbrExemplaire, // Convertir en chaîne
+            nbrExemplaire: response.nbrExemplaire,
+            img: response.img || null // Convertir en chaîne
           });
           
         } else {
@@ -90,7 +92,7 @@ const EditLivre = () => {
         cote2: livre.cote2,
         descripteurs: descripteursArray,
         statut: 'EXIST',
-        img: 'base64EncodedImageHere', // Remplacez par une vraie image si nécessaire
+        img: livre.img, // Remplacez par une vraie image si nécessaire
         nbrExemplaire: parseInt(livre.nbrExemplaire), // Envoyé en tant qu'entier
       };
       console.log('docdataaaa', documentData);
@@ -111,6 +113,17 @@ const EditLivre = () => {
     setConfirmationVisible(false);
     navigate('/gestion-livre');
   };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setLivre({ ...livre, img: reader.result });
+            console.log("Image Base64:", reader.result);  // Log base64 data
+        };
+        reader.readAsDataURL(file);
+    }
+};
 
   return (
     <div className="modifier-livre-container">
@@ -192,6 +205,11 @@ const EditLivre = () => {
             onChange={handleChange}
             required
           />
+        </div>
+
+        <div className="form-group">
+          <label>Image:</label>
+          <input type="file" name="img" onChange={handleImageChange} />
         </div>
 
         <div className="button-container">
