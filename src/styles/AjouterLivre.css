@@ -47,7 +47,7 @@ input[type="text"],
 input[type="number"],
 input[type="file"],
 textarea {
-    width: 75%;                  /* La largeur des champs de texte s'adapte aux 65% restants */
+    width: 65%;                  
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
