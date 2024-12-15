@@ -17,7 +17,6 @@ const checkBibliothecaireAccess = () => {
 const documentService = {
     // Fetch all documents
     getAllDocuments: async () => {
-       
         try {
             const response = await fetch(`${API_URL}`, {
                 method: 'GET',
@@ -26,22 +25,19 @@ const documentService = {
                     Authorization: `Bearer ${getToken()}`
                 }
             });
-
+    
             if (!response.ok) throw new Error('Failed to fetch documents');
-
+    
             const data = await response.json();
-
+    
             // Normalisation des données
-            const normalizedData = data.map(doc => {
-                const { img, ...restOfDoc } = doc; // Supprime le champ img
-                return {
-                    ...restOfDoc,
-                    auteur: Array.isArray(doc.auteur) ? doc.auteur : (doc.auteur ? [doc.auteur] : []),
-                    descripteurs: Array.isArray(doc.descripteurs) ? doc.descripteurs : (doc.descripteurs ? [doc.descripteurs] : []),
-                    soustitre: doc.sousTitre?.trim() || "Non précisé"
-                };
-            });
-
+            const normalizedData = data.map(doc => ({
+                ...doc, // Conserve tous les champs, y compris `img`
+                auteur: Array.isArray(doc.auteur) ? doc.auteur : (doc.auteur ? [doc.auteur] : []),
+                descripteurs: Array.isArray(doc.descripteurs) ? doc.descripteurs : (doc.descripteurs ? [doc.descripteurs] : []),
+                soustitre: doc.sousTitre?.trim() || "Non précisé"
+            }));
+    
             // Enregistrement dans localStorage
             localStorage.setItem('livres', JSON.stringify(normalizedData));
             return normalizedData;
@@ -50,6 +46,7 @@ const documentService = {
             throw error;
         }
     },
+    
     getDocumentById: async (id) => {
         try {
             const response = await fetch(`${API_URL}/${id}`, {
@@ -237,7 +234,7 @@ const documentService = {
     
 };
 
-    // Change document status
+  /*  // Change document status
     updateDocumentAvailability: async (id, newStatut) => {
         checkBibliothecaireAccess(); // Vérifier l'accès
 
@@ -261,6 +258,6 @@ const documentService = {
             throw error;
         }
     };
-
+*/
 
 export default documentService;
