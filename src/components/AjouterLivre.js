@@ -31,12 +31,19 @@ const AjouterLivre = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setLivre({ ...livre, img: reader.result });
-                console.log("Image Base64:", reader.result);  // Log base64 data
+                let imgBase64 = reader.result;
+    
+                // Supprimer la partie 'data:image/jpeg;base64,' si elle existe
+                imgBase64 = imgBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+                // Mettre à jour l'état avec l'image nettoyée
+                setLivre({ ...livre, img: imgBase64 });
+                console.log("Image Base64 nettoyée:", imgBase64);  // Log base64 data sans la partie 'data:image/...' 
             };
             reader.readAsDataURL(file);
         }
     };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
