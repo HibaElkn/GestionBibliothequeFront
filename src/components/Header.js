@@ -84,17 +84,6 @@ const Header = () => {
     <div className="header">
       <img src={logo} alt="Logo" className="logo" />
 
-      <form className="search-container" onSubmit={handleSearchSubmit}>
-        <input 
-          type="text" 
-          placeholder="Rechercher..." 
-          className="search-bar" 
-          value={searchTerm}
-          onChange={handleSearchChange} 
-        />
-        <i className="fas fa-search search-icon"></i> 
-      </form>
-
       <div className="notifications-container" onClick={toggleNotification}>
         <i
           className={`fas fa-bell notification-icon-outline ${hasNotification ? 'has-notification' : ''}`}
