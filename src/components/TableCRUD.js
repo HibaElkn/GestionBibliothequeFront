@@ -20,17 +20,22 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
     const [errors, setErrors] = useState({});  // Assurez-vous que cette ligne est présente
     const [selectedFile, setSelectedFile] = useState(null);  // État pour le fichier sélectionné
     const [successMessage, setSuccessMessage] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+  // Gestion de la recherche
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+};
 
+const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    setCurrentPage(1); // Réinitialiser la page à 1 après une recherche
+};
 
     const [newUser, setNewUser] = useState({ code: '', prenom: '', nom: '', email: '' });
     const [editUser, setEditUser] = useState({ id: null, code: '', prenom: '', nom: '', email: '' });
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
-
-    const totalPages = Math.ceil(data.length / itemsPerPage);
-
     const handleSelectAll = (e) => {
         if (e.target.checked) {
             setSelectedItems(currentItems.map(item => item.id));
@@ -89,7 +94,15 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
             : [...selectedItems, id]
         );
     };
-
+    const filteredData = data.filter(item => 
+        item[firstColumnKey].toLowerCase().includes(searchTerm.toLowerCase()) || 
+        item.prenom.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        item.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        item.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleAddUserChange = (e) => {
@@ -165,6 +178,16 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
     return (
         <div className="container">
             <div className="table-title">
+            <form className="search-container" onSubmit={handleSearchSubmit}>
+                <input
+                    type="text"
+                    placeholder="Rechercher..."
+                    className="search-bar"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                />
+                <i className="fas fa-search search-icon"></i>
+            </form>
                 <button className="btn btn-success btn-sm me-2" onClick={() => setShowImportPopup(true)}>
                     <i className="fas fa-file-import"></i> Importer tous les utilisateurs
                 </button>
