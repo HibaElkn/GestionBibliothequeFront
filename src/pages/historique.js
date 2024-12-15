@@ -34,6 +34,7 @@ const Historique = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState(''); // For search functionality
 
     useEffect(() => {
         const loadUserData = async () => {
@@ -69,32 +70,31 @@ const Historique = () => {
                         dateAction: emprunt.dateRetour || emprunt.dateEmprunt,
                     }));
 
-                    const reservationsAvecType = await Promise.all(
-                        reservations
+                const reservationsAvecType = await Promise.all(
+                    reservations
                         .filter(reservation => reservation.reservationStatus !== "ENCOURS")
                         .map(async (reservation) => {
-                        try {
-                            const document = await documentService.getDocumentById(reservation.documentId); // Récupère le document
-                            const user = await userService.getUserById(reservation.utilisateurId); // Récupère l'utilisateur
-                    
-                            return {
-                                ...reservation,
-                                titre: document.titre || "Titre non disponible", // Ajoute le titre du document
-                                code: user?.code || "code non disponible", // Ajoute le code de l'utilisateur
-                                nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible", // Nom et prénom de l'utilisateur
-                                dateAction: reservation.dateReservation , // Assurez-vous que cette date est correcte
-                                statut: reservation.reservationStatus, // Statut de la réservation (ACCEPTED ou REJECTED)
-                                type: 'Réservation',  // Marquer le type comme "Réservation"
-                            };
-                        } catch (err) {
-                            console.error(`Erreur lors de la récupération des informations pour la réservation ID: ${reservation.id}`, err);
-                            return null; // Retourne null si une erreur se produit
-                        }
-                    }));
-                    
+                            try {
+                                const document = await documentService.getDocumentById(reservation.documentId);
+                                const user = await userService.getUserById(reservation.utilisateurId);
+
+                                return {
+                                    ...reservation,
+                                    titre: document.titre || "Titre non disponible",
+                                    code: user?.code || "code non disponible",
+                                    nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible",
+                                    dateAction: reservation.dateReservation,
+                                    statut: reservation.reservationStatus,
+                                    type: 'Réservation',
+                                };
+                            } catch (err) {
+                                console.error(`Erreur lors de la récupération des informations pour la réservation ID: ${reservation.id}`, err);
+                                return null;
+                            }
+                        })
+                );
 
                 const filteredReservations = reservationsAvecType.filter(reservation => reservation !== null);
-
                 const historique = [...empruntsAvecType, ...filteredReservations];
                 setHistoriqueData(historique);
                 setFilteredData(historique);
@@ -141,6 +141,21 @@ const Historique = () => {
         return type === 'Réservation' ? 'text-primary' : 'text-warning';
     };
 
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        const filtered = historiqueData.filter(item =>
+            item.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.nomPrenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.code.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredData(filtered);
+        setCurrentPage(1);
+    };
+
     if (loading) {
         return <div className="text-center">Chargement de l'historique...</div>;
     }
@@ -151,6 +166,16 @@ const Historique = () => {
 
     return (
         <div className="container mt-4">
+            <form className="search-container" onSubmit={handleSearchSubmit}>
+                <input 
+                    type="text" 
+                    placeholder="Rechercher..." 
+                    className="search-bar" 
+                    value={searchTerm}
+                    onChange={handleSearchChange} 
+                />
+                <i className="fas fa-search search-icon"></i>
+            </form>
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <div className="ms-auto">
                     <select
@@ -233,38 +258,16 @@ const Historique = () => {
             )}
 
             {selectedItem && (
-                <div className="modal fade show d-block" tabIndex="-1">
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">{selectedItem.titre}</h5>
-                                <button type="button" className="btn-close" onClick={closeModal}></button>
-                            </div>
-                            <div className="modal-body">
-                                <div className="mb-3">
-                                    <label htmlFor="type" className="form-label">Type :</label>
-                                    <input type="text" className="form-control" id="type" value={selectedItem.type} readOnly />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="code" className="form-label">Code :</label>
-                                    <input type="text" className="form-control" id="code" value={selectedItem.code} readOnly />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="nomPrenom" className="form-label">Nom et Prénom :</label>
-                                    <input type="text" className="form-control" id="nomPrenom" value={selectedItem.nomPrenom} readOnly />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="dateAction" className="form-label">Date d'Action :</label>
-                                    <input type="text" className="form-control" id="dateAction" value={selectedItem.dateAction} readOnly />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="statut" className="form-label">Statut :</label>
-                                    <input type="text" className="form-control" id="statut" value={selectedItem.statut} readOnly />
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeModal}>Fermer</button>
-                            </div>
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h5>Détails de {selectedItem.titre}</h5>
+                        <div className="modal-body">
+                            <p><strong>Nom:</strong> {selectedItem.nomPrenom}</p>
+                            <p><strong>Code:</strong> {selectedItem.code}</p>
+                            <p><strong>Statut:</strong> {selectedItem.statut}</p>
+                            <p><strong>Date d'action:</strong> {selectedItem.dateAction}</p>
+                            <p><strong>Description:</strong> {selectedItem.description || "Aucune description disponible"}</p>
+                            <button className="btn btn-secondary" onClick={closeModal}>Fermer</button>
                         </div>
                     </div>
                 </div>
