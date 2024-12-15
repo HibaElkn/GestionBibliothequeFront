@@ -73,8 +73,8 @@ const EditLivre = () => {
 
       // Validation du nombre d'exemplaires
       const nbrExemplaire = parseInt(livre.nbrExemplaire, 10);
-      if (isNaN(nbrExemplaire) || nbrExemplaire <= 0) {
-        setErreur('Le nombre d’exemplaires doit être un nombre positif supérieur à zéro.');
+      if (isNaN(nbrExemplaire) || nbrExemplaire < 0) {
+        setErreur('Le nombre d’exemplaires doit être un nombre positif.');
         return;
       }
 
