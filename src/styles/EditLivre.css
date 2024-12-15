@@ -1,5 +1,5 @@
 .modifier-livre-container {
-    width: 800px; /* Ajustez la largeur si nécessaire */
+    width: 700px; /* Ajustez la largeur si nécessaire */
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -33,7 +33,7 @@ label {
 
 input[type="text"],
 textarea {
-    width: 100%;
+    width: 65%;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
