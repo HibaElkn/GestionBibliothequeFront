@@ -98,6 +98,10 @@ const Profil = () => {
           setError("L'ancien mot de passe est incorrect.");
           return;
       }
+      if (newPassword.length < 6) {
+        setError('Le nouveau mot de passe doit contenir au moins 6 caractères.');
+        return;
+      }
 
       // Appel de l'API pour changer le mot de passe
       await userService.changeUserPassword(userId, newPassword);

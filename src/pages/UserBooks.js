@@ -21,15 +21,17 @@ const UserBooks = ({ booksData }) => {
                     console.error("Aucun email trouvé dans le token.");
                     return;
                 }
-    
+                console.log('booksData:', booksData);
+
                 const user = await getUserByEmail(email);
                 if (user) {
                     setUserId(user.id);
-    
+
                     // Vérifier l'éligibilité
                     const eligible = await isEmpruntCountValid(user.id);
                     setIsEligible(eligible);
-                    console.log('isEligible (après mise à jour) : ', eligible);
+                    //console.log('isEligible (après mise à jour) : ', eligible);
+                   
                 } else {
                     console.error("Utilisateur non trouvé.");
                 }
@@ -37,10 +39,10 @@ const UserBooks = ({ booksData }) => {
                 console.error("Erreur lors de la récupération de l'utilisateur connecté :", error);
             }
         };
-    
+
         fetchUser();
     }, []);
-    
+
 
     return (
         <div className="books-section">
@@ -106,10 +108,20 @@ const BookCard = ({ book, userId, isEligible }) => {
         }
     };
 
+    const getCoverImage = (imageBase64) => {
+        console.log('Image Base64:', imageBase64); //
+        return imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : defaultCoverImage;
+    };
+
     return (
         <div className="col-md-4 mb-4">
             <div className="card h-100">
-                <img src={book.coverImage || defaultCoverImage} className="card-img-top" alt={book.titre} />
+                <img 
+                    src={getCoverImage(book.img)} 
+                    className="card-img-top" 
+                    alt={book.titre} 
+                />
+               
                 <div className="card-body">
                     <h5 className="card-title">{book.titre}</h5>
                     <p className="card-text">
@@ -125,22 +137,21 @@ const BookCard = ({ book, userId, isEligible }) => {
                         </>
                     )}
                     <div className="button-container mt-2">
-    <button
-        className="btn btn-see"
-        onClick={() => setShowMore(!showMore)}
-    >
-        {showMore ? 'Voir moins' : 'Voir plus'}
-    </button>
-    {book.statut === 'EXIST' && isEligible && (
-    <button
-        className="btn btn-success"
-        onClick={handleBorrowClick}
-    >
-        Réserver
-    </button>
-)}
-</div>
-
+                        <button
+                            className="btn btn-see"
+                            onClick={() => setShowMore(!showMore)}
+                        >
+                            {showMore ? 'Voir moins' : 'Voir plus'}
+                        </button>
+                        {book.statut === 'EXIST' && isEligible && (
+                            <button
+                                className="btn btn-success"
+                                onClick={handleBorrowClick}
+                            >
+                                Réserver
+                            </button>
+                        )}
+                    </div>
 
                     <Modal show={showModal} onHide={handleCloseModal}>
                         <Modal.Header closeButton>

@@ -101,7 +101,7 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
         if (selectedFile) {
             const reader = new FileReader();
     
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 const data = e.target.result;
                 const workbook = XLSX.read(data, { type: 'binary' });
     
@@ -111,42 +111,70 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                 const jsonData = XLSX.utils.sheet_to_json(sheet);
                 console.log('Raw Imported JSON Data:', jsonData);
     
-                const cleanedData = jsonData.map(item => {
-                    const trimmedItem = {};
-                    for (let key in item) {
-                        if (item.hasOwnProperty(key)) {
-                            const trimmedKey = key.trim();
-                            trimmedItem[trimmedKey] = item[key];
-                        }
-                    }
+                // Helper function to convert image file paths to base64
+                const convertImageToBase64 = (filePath) => {
+                    return new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.src = filePath;
     
-                    const sousTitre = trimmedItem['Sous titre'] || '';
-                    return {
-                        auteurs: trimmedItem['AUTEUR(S)'] ? trimmedItem['AUTEUR(S)'].split(',').map(author => author.trim()) : [],
-                        titre: trimmedItem['TITRE(S)'] || '',
-                        sousTitre: sousTitre,
-                        edition: trimmedItem['Edition'] || '',
-                        cote1: trimmedItem['Cote1'] || '',
-                        cote2: trimmedItem['Cote2'] || '',
-                        descripteurs: trimmedItem['Descripteurs'] ? trimmedItem['Descripteurs'].split('/').map(descriptor => descriptor.trim()) : [],
-                        statut: 'EXIST',
-                        img: 'base64EncodedImageHere',
-                        nbrExemplaire: parseInt(trimmedItem['Nbr Ex']) || 1,
-                    };
-                });
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+    
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            const base64String = canvas.toDataURL('image/png');
+                            resolve(base64String);
+                        };
+    
+                        img.onerror = (error) => reject(error);
+                    });
+                };
+    
+                const cleanedData = await Promise.all(
+                    jsonData.map(async (item) => {
+                        const trimmedItem = {};
+                        for (let key in item) {
+                            if (item.hasOwnProperty(key)) {
+                                const trimmedKey = key.trim();
+                                trimmedItem[trimmedKey] = item[key];
+                            }
+                        }
+    
+                        const sousTitre = trimmedItem['Sous titre'] || '';
+                        const imgBase64 = trimmedItem['Image']
+                            ? await convertImageToBase64(trimmedItem['Image'])
+                            : ''; // Convert the image file path to base64
+    
+                        return {
+                            auteurs: trimmedItem['AUTEUR(S)'] ? trimmedItem['AUTEUR(S)'].split(',').map((author) => author.trim()) : [],
+                            titre: trimmedItem['TITRE(S)'] || '',
+                            sousTitre: sousTitre,
+                            edition: trimmedItem['Edition'] || '',
+                            cote1: trimmedItem['Cote1'] || '',
+                            cote2: trimmedItem['Cote2'] || '',
+                            descripteurs: trimmedItem['Descripteurs'] ? trimmedItem['Descripteurs'].split('/').map((descriptor) => descriptor.trim()) : [],
+                            statut: 'EXIST',
+                            img: imgBase64, // Use the converted base64 string
+                            nbrExemplaire: parseInt(trimmedItem['Nbr Ex']) || 1,
+                        };
+                    })
+                );
     
                 console.log('Cleaned Data:', cleanedData);
     
-                documentService.saveDocuments(cleanedData)
-                    .then(response => {
+                documentService
+                    .saveDocuments(cleanedData)
+                    .then((response) => {
                         console.log('Documents successfully saved:', response);
     
-                        // Mise à jour de l'état tableData pour inclure les nouveaux documents
-                        setTableData(prevData => [...prevData, ...cleanedData]);
+                        // Update the tableData state with new documents
+                        setTableData((prevData) => [...prevData, ...cleanedData]);
     
-                        setShowImportPopup(false); // Fermez la popup
+                        setShowImportPopup(false); // Close the popup
                     })
-                    .catch(error => {
+                    .catch((error) => {
                         console.error('Error saving documents:', error);
                     });
             };
@@ -154,6 +182,7 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
             reader.readAsBinaryString(selectedFile);
         }
     };
+    
     
     // Show loading or error messages if necessary
     if (loading) {

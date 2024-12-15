@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; 
 import { useNavigate } from 'react-router-dom';
 import documentService from '../services/documentService.js';
 import '../styles/AjouterLivre.css';
@@ -12,10 +12,12 @@ const AjouterLivre = () => {
         cote1: '',
         cote2: '',
         descripteurs: '',
-        nbrExemplaire:'',
+        nbrExemplaire: '',
         statut: 'EXIST',  // Default statut value as expected by the backend
-        img: '',          // Default empty img value
+        img: '',        // Default empty img value
     });
+
+    const [erreur, setErreur] = useState('');
 
     const navigate = useNavigate();
 
@@ -24,9 +26,35 @@ const AjouterLivre = () => {
         setLivre({ ...livre, [name]: value });
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLivre({ ...livre, img: reader.result });
+                console.log("Image Base64:", reader.result);  // Log base64 data
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
+        if (livre.nbrExemplaire <= 0) {
+            setErreur('Le nombre d’exemplaires doit être un nombre positif supérieur à zéro.');
+            return;
+        }
+
+        console.log("Image Base64 avant envoi:", livre.img);
+//if (!livre.img) {
+   // setErreur("Veuillez ajouter une image.");
+    //return;
+//}
+
+
+        // Mise à jour des erreurs
+        
         // Prepare the data to be sent in the request
         const livreAvecDescripteurs = {
             titre: livre.titre,
@@ -40,10 +68,10 @@ const AjouterLivre = () => {
             statut: livre.statut,
             img: livre.img,
         };
-    
+
         // Log the data being sent to ensure it's correctly formatted
         console.log("Data being sent to backend:", livreAvecDescripteurs);
-    
+
         try {
             // Send the formatted data to the backend
             await documentService.saveDocument(livreAvecDescripteurs);
@@ -60,6 +88,7 @@ const AjouterLivre = () => {
     return (
         <div className="ajouter-livre-container">
             <h2>Ajouter un Livre</h2>
+            {erreur && <p className="alert">{erreur}</p>}
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Titre:</label>
@@ -91,30 +120,30 @@ const AjouterLivre = () => {
                 </div>
                 <div className="form-group">
                     <label>Nombre d'exemplaires :</label>
-                    <input type="number" name="nbrExemplaire" value={livre.nbrExemplaire} onChange={handleChange} />
+                    <input type="number" name="nbrExemplaire" value={livre.nbrExemplaire} onChange={handleChange} required />
+                </div>
+                <div className="form-group">
+                    <label>Image:</label>
+                    <input type="file" name="img" onChange={handleImageChange} />
                 </div>
                 <div className="button-container">
-                <button type="submit" className="btn btn-success"
-                     style={{
-                        backgroundColor: '#004079ff',  
+                    <button type="submit" className="btn btn-success"
+                        style={{
+                            backgroundColor: '#004079ff',  
+                            color: 'white',              
+                            border: 'none',             
+                            padding: '10px 20px',        
+                            borderRadius: '10px',        
+                            fontSize: '16px',            
+                        }}>Ajouter</button>
+                    <button type="button" className="btn btn-secondary" onClick={handleCancel} style={{
+                        backgroundColor: '#f44336',  
                         color: 'white',              
                         border: 'none',             
                         padding: '10px 20px',        
-                        borderRadius: '10px',        
-                        fontSize: '16px',            
-                    }}>Ajouter</button>
-                    <button type="button" className="btn btn-secondary" onClick={handleCancel} style={{
-                                backgroundColor: '#f44336',  
-                                color: 'white',              
-                                border: 'none',             
-                                padding: '10px 20px',        
-                                borderRadius: '10px',
-                                border: 'none',
-                                fontSize: '16px',   
-                                    
-                            }}
-                            >Annuler</button>
-                    
+                        borderRadius: '10px',
+                        fontSize: '16px',   
+                    }}>Annuler</button>
                 </div>
             </form>
         </div>
