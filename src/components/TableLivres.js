@@ -17,6 +17,7 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
     const [showImportPopup, setShowImportPopup] = useState(false); // State to toggle import popup
     const [showDeletePopup, setShowDeletePopup] = useState(false); // State to toggle delete popup
     const [selectedDeleteItems, setSelectedDeleteItems] = useState([]); // Track items to delete
+    const [searchTerm, setSearchTerm] = useState(''); // For search functionality
 
     useEffect(() => {
         const getDocuments = async () => {
@@ -75,13 +76,12 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
         }
     };
 
-    // Handle file change for importing data
     const handleFileChange = (e) => {
         setSelectedFile(e.target.files[0]);
     };
 
     const handleDelete = async (id) => {
-        setShowDeletePopup(true); // Show delete confirmation popup
+        setShowDeletePopup(true); 
         setSelectedDeleteItems([id]); // Set the item to be deleted
     };
 
@@ -94,6 +94,25 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
             console.error("Error deleting document:", error);
             alert("Erreur lors de la suppression du document.");
         }
+    };
+
+    // Filter the data based on the search term
+    const filteredData = tableData.filter(item => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            item.titre.toLowerCase().includes(searchLower) ||
+            item.auteurs.some(auteur => auteur.toLowerCase().includes(searchLower)) ||
+            item.descripteurs.some(descriptor => descriptor.toLowerCase().includes(searchLower))
+        );
+    });
+   
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+    
+    const handleSearchSubmit = (event) => {
+        event.preventDefault();
+        console.log('Recherche pour:', searchTerm);
     };
 
     const handleImport = () => {
@@ -155,6 +174,16 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
 
     return (
         <div className="container">
+            <form className="search-container" onSubmit={handleSearchSubmit}>
+                <input 
+                    type="text" 
+                    placeholder="Rechercher..." 
+                    className="search-bar" 
+                    value={searchTerm}
+                    onChange={handleSearchChange} 
+                />
+                <i className="fas fa-search search-icon"></i> 
+            </form>
             <div className="table-title">
                 <button className="btn btn-success btn-sm me-2" onClick={() => setShowImportPopup(true)}>
                     <i className="fas fa-file-import"></i> Importer tous les livres
@@ -193,19 +222,16 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                     <div className="popup-content">
                         <h5>Êtes-vous sûr de vouloir supprimer ce(s) livre(s)?</h5>
                         <div class="btn-container">
-
-
-                        <button className="btn btn-danger mt-2" onClick={selectedDeleteItems.length === 1 ? confirmDelete : confirmDeleteSelected}>
-                            Confirmer
-                        </button>
-                        <button
-                            className="btn btn-secondary mt-2"
-                            onClick={() => setShowDeletePopup(false)}
-                        >
-                            Annuler
-                        </button>
+                            <button className="btn btn-danger mt-2" onClick={selectedDeleteItems.length === 1 ? confirmDelete : confirmDeleteSelected}>
+                                Confirmer
+                            </button>
+                            <button
+                                className="btn btn-secondary mt-2"
+                                onClick={() => setShowDeletePopup(false)}
+                            >
+                                Annuler
+                            </button>
                         </div>
-
                     </div>
                 </div>
             )}
@@ -236,7 +262,7 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentItems.map(item => (
+                        {filteredData.slice(indexOfFirstItem, indexOfLastItem).map(item => (
                             <tr key={item.id}>
                                 <td>
                                     <span className="custom-checkbox">
@@ -250,14 +276,14 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                                 </td>
                                 <td>{item.auteurs.join(', ')}</td>
                                 <td>{item.titre}</td>
-                                <td>{item.soustitre || 'Non précisé'}</td>
+                                <td>{item.sousTitre}</td>
                                 <td>{item.edition}</td>
                                 <td>{item.cote1}</td>
                                 <td>{item.cote2}</td>
                                 <td>{item.descripteurs.join(', ')}</td>
                                 <td>{item.nbrExemplaire}</td>
                                 <td className="actions">
-                                    <Link to={`/modifier-livre/${item.id}`} className="btn btn-sm me-2" style={{ backgroundColor: 'transparent', color: '#007bff' }}>
+                                <Link to={`/modifier-livre/${item.id}`} className="btn btn-sm me-2" style={{ backgroundColor: 'transparent', color: '#007bff' }}>
                                         <i className="fas fa-edit"></i>
                                     </Link>
                                     <button className="btn btn-sm" style={{ backgroundColor: 'transparent', color: '#dc3545' }} onClick={() => handleDelete(item.id)}>
@@ -269,22 +295,23 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                     </tbody>
                 </table>
             </div>
-
             {/* Button to delete selected items */}
             {selectedItems.length > 0 && (
-                <div className="delete-button-container">
-                    <button className="btn btn-danger btn-sm mt-2" onClick={handleDeleteSelected}>
-                        <i className="fas fa-trash-alt"></i> Supprimer les livres sélectionnés
-                    </button>
-                </div>
-            )}
-
+                            <div className="delete-button-container">
+                                <button className="btn btn-danger btn-sm mt-2" onClick={handleDeleteSelected}>
+                                    <i className="fas fa-trash-alt"></i> Supprimer les livres sélectionnés
+                                </button>
+                            </div>
+                        )}
             {/* Pagination */}
             <nav>
                 <ul className="pagination">
-                    {Array.from({ length: totalPages }, (_, index) => (
+                    {[...Array(totalPages)].map((_, index) => (
                         <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                            <button className="page-link" onClick={() => paginate(index + 1)}>
+                            <button
+                                className="page-link"
+                                onClick={() => paginate(index + 1)}
+                            >
                                 {index + 1}
                             </button>
                         </li>
