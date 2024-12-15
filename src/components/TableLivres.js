@@ -121,10 +121,10 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
             reader.onload = (e) => {
                 const data = e.target.result;
                 const workbook = XLSX.read(data, { type: 'binary' });
-
+    
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
-
+    
                 const jsonData = XLSX.utils.sheet_to_json(sheet);
                 const cleanedData = jsonData.map(item => {
                     const trimmedItem = {};
@@ -134,8 +134,15 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                             trimmedItem[trimmedKey] = item[key];
                         }
                     }
-
+    
                     const sousTitre = trimmedItem['Sous titre'] || '';
+                    let imgBase64 = trimmedItem['Image'] || '';
+                    
+                    // Remove the prefix 'data:image/...;base64,' if it exists
+                    if (imgBase64.startsWith('data:image')) {
+                        imgBase64 = imgBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+                    }
+    
                     return {
                         auteurs: trimmedItem['AUTEUR(S)'] ? trimmedItem['AUTEUR(S)'].split(',').map(author => author.trim()) : [],
                         titre: trimmedItem['TITRE(S)'] || '',
@@ -145,11 +152,11 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
                         cote2: trimmedItem['Cote2'] || '',
                         descripteurs: trimmedItem['Descripteurs'] ? trimmedItem['Descripteurs'].split('/').map(descriptor => descriptor.trim()) : [],
                         statut: 'EXIST',
-                        img: 'base64EncodedImageHere',
+                        img: imgBase64, // Use cleaned base64 image string
                         nbrExemplaire: parseInt(trimmedItem['Nbr Ex']) || 1,
                     };
                 });
-
+    
                 documentService.saveDocuments(cleanedData)
                     .then(response => {
                         setTableData(prevData => [...prevData, ...cleanedData]);
@@ -162,6 +169,7 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
             reader.readAsBinaryString(selectedFile);
         }
     };
+    
 
     // Show loading or error messages if necessary
     if (loading) {
