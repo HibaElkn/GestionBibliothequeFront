@@ -4,20 +4,17 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/UserInterface.css';
 import documentService from '../services/documentService';
 
-const categories = ['Fiction', 'Classique', 'Fantastique', 'Philosophie', 'Aventure', 'Historique', 'Poésie'];
-const languages = ['Français', 'Anglais', 'Espagnol', 'Russe', 'Grec ancien'];
-
 const UserInterface = () => {
     const [view, setView] = useState('catalogue');
     const [filters, setFilters] = useState({
         keywords: '',
         availableOnly: false,
         category: '',
-        language: ''
     });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 6;
     const [documents, setDocuments] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const fetchDocuments = async () => {
@@ -31,7 +28,6 @@ const UserInterface = () => {
 
         fetchDocuments();
     }, []);
-
 
     const handleAvailabilityChange = () => {
         setFilters((prevFilters) => ({ ...prevFilters, availableOnly: !prevFilters.availableOnly }));
@@ -48,13 +44,29 @@ const UserInterface = () => {
         }));
     };
 
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
     const filteredBooks = documents.filter((book) => {
+        const bookTitle = book.titre ? book.titre.toLowerCase() : '';
+        const bookAuthors = Array.isArray(book.auteurs) 
+        ? book.auteurs.map((author) => author.toLowerCase()) 
+        : book.auteurs ? [book.auteurs.toLowerCase()] : [];
+
+        const matchesKeywords =
+            searchTerm === '' || 
+            bookTitle.includes(searchTerm.toLowerCase()) || 
+            bookAuthors.some((author) => author.includes(searchTerm));
+
         const matchesAvailability = !filters.availableOnly || book.available;
-        const matchesKeywords = filters.keywords === '' || book.title.toLowerCase().includes(filters.keywords.toLowerCase()) || book.author.toLowerCase().includes(filters.keywords.toLowerCase());
+
         const matchesCategory = filters.category === '' || book.category === filters.category;
-        const matchesLanguage = filters.language === '' || book.language === filters.language;
-        return matchesAvailability && matchesKeywords && matchesCategory && matchesLanguage;
+
+        return matchesAvailability && matchesKeywords && matchesCategory;
     });
+
+    const noBooksFound = filteredBooks.length === 0;
 
     const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -65,16 +77,32 @@ const UserInterface = () => {
 
     return (
         <div className="container user-interface">
-        
+            <form className="search-container mb-4">
+                <input 
+                    type="text" 
+                    placeholder="Rechercher par titre ou auteur..." 
+                    className="search-bar" 
+                    value={searchTerm}
+                    onChange={handleSearchChange} 
+                />
+                <i className="fas fa-search search-icon"></i>
+            </form>
 
             {view === 'catalogue' && (
-                <>
-                    <div className="row">
-                        <div className="col-md-1">
-                
-                        </div>
-                        <div className="col-md-9">
+                <div className="row">
+                    <div className="col-md-1">
+                        {/* Peut-être des filtres supplémentaires à ajouter ici */}
+                    </div>
+                    <div className="col-md-9">
+                        {noBooksFound ? (
+                            <div className="no-books-message">
+                                <p>Aucun livre trouvé pour cette recherche.</p>
+                            </div>
+                        ) : (
                             <UserBooks booksData={currentBooks} />
+                        )}
+
+                        {!noBooksFound && (
                             <nav className="mt-2">
                                 <ul className="pagination justify-content-center">
                                     {[...Array(totalPages).keys()].map((number) => (
@@ -88,9 +116,9 @@ const UserInterface = () => {
                                     ))}
                                 </ul>
                             </nav>
-                        </div>
+                        )}
                     </div>
-                </>
+                </div>
             )}
         </div>
     );
