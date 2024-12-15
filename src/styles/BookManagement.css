@@ -58,6 +58,7 @@ body {
     border-color: #D99A22ff;
     padding: 0.25rem 0.5rem; 
     font-size: 0.875rem;
+    width: fit-content;
 }
 
 .btn-success:hover {
