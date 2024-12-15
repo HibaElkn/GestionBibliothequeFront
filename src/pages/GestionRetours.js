@@ -10,7 +10,7 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
     const [retoursData, setRetoursData] = useState([]);
     const [filter, setFilter] = useState('tous');
     const [alertMessage, setAlertMessage] = useState('');
-
+    const [searchTerm, setSearchTerm] = useState(''); 
     const getStatutClass = (statut) => {
         let statutText = '';
         let className = '';
@@ -40,10 +40,10 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
         const fetchEmpruntsWithDocuments = async () => {
             try {
                 const emprunts = await getAllEmprunts();
-    
+        
                 const today = new Date();
                 today.setHours(0, 0, 0, 0); // Reset time to ignore hours, minutes, and seconds
-    
+        
                 const updatedEmprunts = await Promise.all(
                     emprunts.map(async (retour) => {
                         try {
@@ -51,18 +51,24 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                             const borrowDate = new Date(retour.dateEmprunt);
                             returnDate.setHours(0, 0, 0, 0); // Reset time for comparison
                             borrowDate.setHours(0, 0, 0, 0);
-    
+        
+                            // Vérification si la date de retour est valide
+                            if (isNaN(returnDate)) {
+                                console.error(`Date de retour invalide pour l'emprunt ${retour.id}`);
+                                retour.dateRetour = null; // Si la date est invalide, la réinitialiser à null
+                            }
+        
                             // Update status if return date is overdue
-                            if (returnDate <= today && retour.statut !== 'RETOURNER') {
+                            if (returnDate && returnDate <= today && retour.statut !== 'RETOURNER') {
                                 const updatedRetour = await updateStatut(retour.id, 'RETARD'); // Ensure backend is updated
                                 retour.statut = updatedRetour.statut; // Ensure the status is updated in state
                             }
-    
+        
                             // Update document status if borrow date is overdue
                             if (borrowDate <= today && retour.statut !== 'RETOURNER') {
                                 await documentService.changeDocumentStatus(retour.document.id, 'NOT_EXIST');
                             }
-    
+        
                             // Add document title to the retour object
                             return { ...retour, titreDocument: retour.document.titre };
                         } catch (error) {
@@ -71,7 +77,7 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                         }
                     })
                 );
-    
+        
                 // Update state with the processed emprunts
                 setRetoursData(updatedEmprunts);
             } catch (error) {
@@ -79,22 +85,40 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                 setAlertMessage('Erreur lors du chargement des emprunts.');
             }
         };
+        
     
         fetchEmpruntsWithDocuments();
     }, []); // Dependency array ensures this runs only once on component mount
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
     
+    const handleSearchSubmit = (event) => {
+        event.preventDefault();
+        console.log('Recherche pour:', searchTerm);
+    };
+
     const filteredRetours = retoursData.filter((retour) => {
+        // Filtrage par statut (selon le filtre sélectionné)
+        let statutCondition = false;
         if (filter === 'tous') {
-            return retour.statut === 'ATTENTE' || retour.statut === 'RETARD'; // Inclure "En cours" et "En retard"
+            statutCondition = retour.statut === 'ATTENTE' || retour.statut === 'RETARD';
+        } else if (filter === 'en retard') {
+            statutCondition = retour.statut === 'RETARD';
+        } else if (filter === 'en cours') {
+            statutCondition = retour.statut === 'ATTENTE';
         }
-        if (filter === 'en retard') {
-            return retour.statut === 'RETARD'; // Inclure uniquement "En retard"
-        }
-        if (filter === 'en cours') {
-            return retour.statut === 'ATTENTE'; // Inclure uniquement "En cours"
-        }
-        return false;
+    
+        // Filtrage par recherche
+        const searchCondition = (
+            retour.utilisateur.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            retour.utilisateur.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            retour.titreDocument.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    
+        return statutCondition && searchCondition;  // Combine les deux conditions de filtre
     });
+    
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -145,7 +169,16 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                     <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             )}
-
+            <form className="search-container" onSubmit={handleSearchSubmit}>
+                <input 
+                    type="text" 
+                    placeholder="Rechercher..." 
+                    className="search-bar" 
+                    value={searchTerm}
+                    onChange={handleSearchChange} 
+                />
+                <i className="fas fa-search search-icon"></i> 
+            </form>
             <div className="d-flex justify-content-end mb-3">
                 <div>
                     <select
@@ -178,21 +211,17 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                                 <td>{retour.utilisateur.code}</td>
                                 <td>{retour.utilisateur.nom} {retour.utilisateur.prenom}</td>
                                 <td>{retour.titreDocument}</td>
-                                <td>{new Date(retour.dateRetour).toLocaleDateString()}</td>
+                                <td>{retour.dateRetour ? new Date(retour.dateRetour).toLocaleDateString() : 'Date inconnue'}</td>
                                 <td>
-                                <span className={`badge ${getStatutClass(retour.statut).className} rounded-3 fs-10`}>
-                                    {getStatutClass(retour.statut).statutText}
-                                </span>
-                                {retour.statut === 'RETARD' && (
-                                    <span className="badge bg-danger ms-2 rounded-3 fs-10">
-                                        {calculateRetardDuration(retour.dateRetour)} jour(s) {/* Displaying three dots */}
+                                    <span className={`badge ${getStatutClass(retour.statut).className} rounded-3 fs-10`}>
+                                        {getStatutClass(retour.statut).statutText}
                                     </span>
-                                )}
-                            </td>
-
-
-
-
+                                    {retour.statut === 'RETARD' && (
+                                        <span className="badge bg-danger ms-2 rounded-3 fs-10">
+                                            {calculateRetardDuration(retour.dateRetour)} jour(s)
+                                        </span>
+                                    )}
+                                </td>
                                 <td>
                                     {retour.statut !== 'RETOURNER' && (
                                        <button
