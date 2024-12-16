@@ -10,7 +10,7 @@
     height: max-content; 
     padding: 10px;
     box-sizing: border-box;
-    width: 300px;
+    width: fit-content;
 }
 
 .books-section .card-body {

@@ -144,7 +144,7 @@ const BookCard = ({ book, userId, isEligible }) => {
                         <strong>Auteur(s):</strong> {Array.isArray(book.auteurs) ? book.auteurs.join(', ') : book.auteurs}
                     </p>
                     <p className={`card-text ${book.statut === 'EXIST' ? 'text-success' : 'text-danger'}`}>
-                        <strong>Disponibilité:</strong> {book.statut === 'EXIST' ? 'Disponible' : 'Indisponible'}
+                        <strong></strong> {book.statut === 'EXIST' ? 'Disponible' : 'Indisponible'}
                     </p>
                     {showMore && (
                         <>

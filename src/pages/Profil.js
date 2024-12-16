@@ -148,7 +148,7 @@ const Profil = () => {
 
   return (
     <div className="profil-container">
-      <h1 className="profil-titre">Profil Utilisateur</h1>
+      <h1 className="profil-titre">Profil</h1>
 
       <div className="profil-info">
         {/* Image de profil */}
