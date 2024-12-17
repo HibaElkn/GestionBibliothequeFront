@@ -28,7 +28,7 @@ const GestionEtudiants = () => {
                 codeMassar: newUser.code,
                 //role: "ETUDIANT"
             };
-            await userService.addUser('etudiant', etudiant, "123456");
+            await userService.addUser( etudiant, "123456");
             const data = await userService.getUsers('etudiant'); // Actualise la liste des étudiants
             setUsers(data);
         } catch (error) {

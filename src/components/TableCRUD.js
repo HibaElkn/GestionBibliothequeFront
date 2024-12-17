@@ -5,6 +5,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../styles/UserManagement.css';
 import userService from '../services/userService';
+import authService from '../services/authService'; 
+
 
     
 const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onDeleteSelected, onAdd, onImport }) => {
@@ -26,13 +28,14 @@ const TableCRUD = ({ data, firstColumnName,firstColumnKey, onEdit, onDelete, onD
     setSearchTerm(event.target.value);
 };
 
+
 const handleSearchSubmit = (event) => {
     event.preventDefault();
     setCurrentPage(1); // Réinitialiser la page à 1 après une recherche
 };
 
     const [newUser, setNewUser] = useState({ code: '', prenom: '', nom: '', email: '' });
-    const [editUser, setEditUser] = useState({ id: null, code: '', prenom: '', nom: '', email: '' });
+    const [editUser, setEditUser] = useState({ id: null, code: '', prenom: '', nom: '', email: '', role: '' });
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -55,6 +58,22 @@ const handleSearchSubmit = (event) => {
             setSelectedFile(null);
         }
     };
+    const verifRole = async (user) => {
+        try {
+            const userData = await userService.getUserById(user.id);
+            if (userData && userData.role) {
+                console.log('Role:', userData.role);
+                return userData.role;
+            } else {
+                console.error('Role non trouvé pour cet utilisateur');
+                return null;
+            }
+        } catch (error) {
+            console.error('Erreur lors de la vérification du rôle:', error);
+            return null;
+        }
+    };
+    
 
     const validateEditForm = () => {
         let formErrors = {};
@@ -64,6 +83,9 @@ const handleSearchSubmit = (event) => {
             formErrors.email = 'Ce champ est requis';
         } else if (!emailRegex.test(editUser.email)) {
             formErrors.email = "L'email doit être au format 'xxx@uph.ac.ma'";
+        }
+        if (!editUser.role) {
+            formErrors.role = 'Veuillez sélectionner un rôle';
         }
         setErrors(formErrors);
         return Object.keys(formErrors).length === 0;
@@ -170,8 +192,9 @@ const handleSearchSubmit = (event) => {
         }
     };
     
-    const openEditPopup = (user) => {
-        setEditUser(user);
+    const openEditPopup = async (user) => {
+        const role = await verifRole(user);
+        setEditUser({ ...user, role });
         setShowEditUserPopup(true);
     };
 
@@ -336,6 +359,21 @@ const handleSearchSubmit = (event) => {
                         <input type="text" name="prenom" value={editUser.prenom} placeholder="Prénom" onChange={handleEditUserChange} />
                         <input type="text" name="nom" value={editUser.nom} placeholder="Nom" onChange={handleEditUserChange} />
                         <input type="email" name="email" value={editUser.email} placeholder="Email" onChange={handleEditUserChange} />
+                        {editUser.role !== 'ETUDIANT'  && (
+                        <select
+                            name="role"
+                            value={editUser.role}
+                            onChange={handleEditUserChange}
+                            className="form-select mt-2"
+                        >
+                            
+                            <option value="ADMIN">Administrateur</option>
+                            <option value="BIBLIOTHECAIRE">Bibliothécaire</option>
+                            <option value="PERSONNEL">Personnel</option>
+                            
+                        </select>
+                        )}
+
                         {errors.email && <div className="error-message">{errors.email}</div>}
                         <button className="btn btn-sm me-2" onClick={() => {
         if (validateEditForm()) {
