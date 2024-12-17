@@ -1,140 +1,143 @@
 .profil-container {
     background-color: #f9f9f9;
-    padding: 20px;
+    padding: 25px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     max-width: 800px;
     margin: 30px auto;
+    font-family: Arial, sans-serif;
+    margin-right: 100px;
 }
-  
+
+/* Titre du profil */
 .profil-titre {
     text-align: center;
-    color: #004079ff;
-    font-size: 1.5rem; 
-    margin-bottom: 20px; 
+    color: #004080;
+    font-size: 1.8rem;
+    margin-bottom: 25px;
     font-weight: bold;
+    text-transform: uppercase;
 }
-  
+
+/* Conteneur des informations */
 .profil-info {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Espacement réduit */
+    gap: 20px; /* Espacement amélioré */
 }
-  
+
+/* Élément de chaque section */
 .profil-item {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; 
+    align-items: center;
+    gap: 10px;
 }
-  
-/* Style du label */
+
+/* Style des labels */
 .profil-label {
     font-weight: bold;
-    margin-bottom: 4px; 
-    font-size: 1rem; 
-    width: max-content;
-    color: #004079ff;
+    font-size: 1rem;
+    color: #004080;
+    width: 150px; 
+    text-align: left;
+    margin: 0;
+}
 
-}
-  
-.profil-text {
-    font-size: 0.9rem; 
-    color: #004079ff;
-}
-  
+/* Champs d'entrée */
 .profil-input {
-    padding: 10px 15px; 
-    border: 1px solid #ddd;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    font-size: 0.9rem; 
+    flex-grow: 1;
     color: #333;
-    width: 100%;
+    transition: border-color 0.3s ease;
 }
-  
+
+.profil-input:focus {
+    border-color: #004080;
+    outline: none;
+}
+
+/* Conteneur de l'image */
 .image-container {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-direction: line;
+    margin-bottom: 20px;
+    gap : 30px;
+}
+
+.profil-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     margin-bottom: 10px;
 }
-  
-.profil-image {
-    width: 150px; 
-    height: 150px; 
-    border-radius: 50%;
-    margin-right: 10px;
-}
-  
 .image-upload {
-    padding: 4px;
-}
-  
-.edit-password-button {
-    padding: 10px 15px; 
-    background-color: #004079ff; 
+    display: none; 
+  }
+
+/* Bouton upload personnalisé */
+.custom-file-upload {
+    background-color: #0056b3;
     color: white;
     border: none;
-    border-radius: 8px; 
+    padding: 10px 20px;
     cursor: pointer;
-    font-size: 1rem; 
-    width: 100%;
-    margin-top: 10px; 
-    transition: background-color 0.3s ease; 
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+   width: fit-content;
 }
-  
-.edit-password-button:hover {
-    background-color: #004079ff;
+
+.custom-file-upload:hover {
+    background-color: #004080;
 }
-  
-.update-password-button {
-    padding: 10px 15px; 
-    background-color: #004079ff; 
-    color: white;
-    border: none;
-    border-radius: 8px; 
-    cursor: pointer;
-    font-size: 1rem; 
-}
-  
+
+/* Boutons d'action */
+.edit-password-button,
+.update-password-button,
 .save-button {
-    padding: 10px 15px; 
-    background-color: #004079ff; 
+    padding: 10px 15px;
+    background-color: #004080;
     color: white;
     border: none;
-    border-radius: 8px; 
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 1rem; 
+    font-size: 1rem;
     width: 100%;
-    margin-top: 15px; 
-    transition: background-color 0.3s ease; 
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
-  
+
+.edit-password-button:hover,
+.update-password-button:hover,
 .save-button:hover {
-    background-color: #004079ff;
+    background-color: #003366;
+    transform: scale(1.02);
 }
-  
+
+.edit-password-button:active,
+.update-password-button:active,
+.save-button:active {
+    background-color: #002050;
+    transform: scale(1);
+}
+
+/* Messages d'erreur */
 .error-message {
-    color: #e74c3c; 
+    color: #e74c3c;
     text-align: center;
-    font-size: 1rem; 
-    margin-top: 10px; 
+    font-size: 1rem;
+    margin-top: 10px;
     font-weight: bold;
 }
 
-  .image-upload {
-    display: none; 
-  }
-  
-  .custom-file-upload {
-    background-color:#0056b3;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    cursor: pointer;
+/* Espacement global */
+button,
+.custom-file-upload {
     margin-top: 10px;
-    border-radius: 20px;
-    font-size: 10px;
-    width: fit-content;
-
-  }
-  
- 
-  
+}
