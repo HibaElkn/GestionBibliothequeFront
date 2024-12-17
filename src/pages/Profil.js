@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/Profil.css';
 import authService from '../services/authService';
 import userService from '../services/userService';
+import { Modal, Button } from 'react-bootstrap';
 
 const Profil = () => {
   const [image, setImage] = useState(null);
@@ -17,7 +18,9 @@ const Profil = () => {
   const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
   const [userId, setUserId] = useState(null);
-
+  const [showModal, setShowModal] = useState(false);
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = () => setShowModal(true);
   // Charger les données utilisateur
   const loadUserData = async () => {
     const emailFromToken = authService.getEmailFromToken();
@@ -135,14 +138,11 @@ const Profil = () => {
   };
 
   const handleSaveChanges = () => {
-    if (imageChanged || passwordChanged) {
-      handleSaveImage();
-      alert('Changements enregistrés !');
-      window.location.reload();
-      // Implémenter la logique pour sauvegarder les autres changements ici
+    if (!imageChanged && !passwordChanged) {
+      handleShowModal(); 
     } else {
       handleSaveImage();
-      alert('Aucun changement détecté.');
+      window.location.reload();
     }
   };
 
@@ -243,6 +243,19 @@ const Profil = () => {
           </button>
         </div>
       </div>
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Aucun changement détecté</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Il semble que vous n'avez effectué aucune modification. Veuillez modifier les informations pour sauvegarder.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Fermer
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
