@@ -40,10 +40,10 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
         const fetchEmpruntsWithDocuments = async () => {
             try {
                 const emprunts = await getAllEmprunts();
-        
+    
                 const today = new Date();
                 today.setHours(0, 0, 0, 0); // Reset time to ignore hours, minutes, and seconds
-        
+    
                 const updatedEmprunts = await Promise.all(
                     emprunts.map(async (retour) => {
                         try {
@@ -51,24 +51,43 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                             const borrowDate = new Date(retour.dateEmprunt);
                             returnDate.setHours(0, 0, 0, 0); // Reset time for comparison
                             borrowDate.setHours(0, 0, 0, 0);
-        
+    
                             // Vérification si la date de retour est valide
                             if (isNaN(returnDate)) {
                                 console.error(`Date de retour invalide pour l'emprunt ${retour.id}`);
                                 retour.dateRetour = null; // Si la date est invalide, la réinitialiser à null
                             }
-        
-                            // Update status if return date is overdue
-                            if (returnDate && returnDate <= today && retour.statut !== 'RETOURNER') {
-                                const updatedRetour = await updateStatut(retour.id, 'RETARD'); // Ensure backend is updated
-                                retour.statut = updatedRetour.statut; // Ensure the status is updated in state
+    
+                            // Calculate delay
+                            const delay = calculateRetardDuration(returnDate);
+    
+                            // Update status if delay is greater than 0 and status is still 'ATTENTE'
+                            if (delay > 0 && retour.statut === 'ATTENTE') {
+                                try {
+                                    // Only update the statut to 'RETARD', and leave the dateRetour unchanged
+                                    const updatedRetour = await updateStatut(retour.id, 'RETARD');
+                                    
+                                    // Ensure the statut is updated in the UI, but keep the original dateRetour
+                                    setRetoursData((prevData) =>
+                                        prevData.map((r) =>
+                                            r.id === retour.id ? {
+                                                ...r,
+                                                statut: updatedRetour.statut, // Only update the statut field
+                                                // dateRetour remains the same (it should not be changed)
+                                            } : r
+                                        )
+                                    );
+                                } catch (error) {
+                                    console.error(`Erreur lors de la mise à jour du statut de l'emprunt ${retour.id}:`, error);
+                                }
                             }
-        
+                            
+    
                             // Update document status if borrow date is overdue
                             if (borrowDate <= today && retour.statut !== 'RETOURNER') {
                                 await documentService.changeDocumentStatus(retour.document.id, 'NOT_EXIST');
                             }
-        
+    
                             // Add document title to the retour object
                             return { ...retour, titreDocument: retour.document.titre };
                         } catch (error) {
@@ -77,7 +96,7 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                         }
                     })
                 );
-        
+    
                 // Update state with the processed emprunts
                 setRetoursData(updatedEmprunts);
             } catch (error) {
@@ -85,10 +104,25 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                 setAlertMessage('Erreur lors du chargement des emprunts.');
             }
         };
-        
     
         fetchEmpruntsWithDocuments();
     }, []); // Dependency array ensures this runs only once on component mount
+    
+    // Helper function to calculate delay
+    const calculateRetardDuration = (returnDate) => {
+        const today = new Date();
+        const timeDifference = today - returnDate;
+        const dayDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
+        const delay = dayDifference > 0 ? dayDifference : 0;
+    
+        return delay;
+    };
+      // Helper function to calculate dateRetour (dateEmprunt + 3 days)
+      const calculateDateRetour = (dateEmprunt) => {
+        const empruntDate = new Date(dateEmprunt);
+        empruntDate.setDate(empruntDate.getDate() + 3); // Add 3 days
+        return empruntDate.toLocaleDateString(); // Return the formatted date
+    };
     const handleSearchChange = (event) => {
         setSearchTerm(event.target.value);
     };
@@ -145,21 +179,7 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
         }
     };
 
-    const calculateRetardDuration = (dateRetour) => {
-        const today = new Date();
-        const returnDate = new Date(dateRetour);
-        const timeDifference = today - returnDate;
-        const dayDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
-        const delay = dayDifference > 0 ? dayDifference : 0;
-    
-        // Log the delay with three dots in the console
-        if (delay > 0) {
-            console.log(`Retard de ${delay} jour(s)`);
-        }
-    
-        return delay;
-    };
-    
+   
 
     return (
         <div className="container">
@@ -211,7 +231,7 @@ const GestionRetours = ({ onDeleteRetour, onAddRetour }) => {
                                 <td>{retour.utilisateur.code}</td>
                                 <td>{retour.utilisateur.nom} {retour.utilisateur.prenom}</td>
                                 <td>{retour.titreDocument}</td>
-                                <td>{retour.dateRetour ? new Date(retour.dateRetour).toLocaleDateString() : 'Date inconnue'}</td>
+                                <td>{calculateDateRetour(retour.dateEmprunt)}</td>
                                 <td>
                                     <span className={`badge ${getStatutClass(retour.statut).className} rounded-3 fs-10`}>
                                         {getStatutClass(retour.statut).statutText}

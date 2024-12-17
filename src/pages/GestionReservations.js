@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import '../styles/Emprunts.css';
-import { getAllReservations, updateReservation } from '../services/reservationService';
+
 import documentService from '../services/documentService';
 import userService from '../services/userService';
 import { saveEmprunt } from '../services/empruntService';
+import { getAllReservations, updateReservation ,deleteReservation} from '../services/reservationService';
 
 const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -16,33 +17,58 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
     useEffect(() => {
         const fetchReservations = async () => {
             try {
+                const now = new Date();
                 const data = await getAllReservations();
+
                 const reservationsWithDetails = await Promise.all(
                     data.map(async (reservation) => {
-                        try {
-                            const document = await documentService.getDocumentById(reservation.documentId);
-                            const user = await userService.getUserById(reservation.utilisateurId);
+                        const reservationDate = new Date(reservation.dateReservation);
+                        const timeElapsed = now - reservationDate;
+                        const isExpired = timeElapsed > 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-                            return {
-                                ...reservation,
-                                titreDocument: document.titre || "Titre non disponible",
-                                code: user?.code || "Code non disponible",
-                                nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible",
-                            };
-                        } catch (err) {
-                            console.error(`Erreur lors de la récupération des détails pour la réservation ID: ${reservation.id}`, err);
-                            return {
-                                ...reservation,
-                                titreDocument: "Titre non disponible",
-                                code: "Code non disponible",
-                                nomPrenom: "Nom non disponible",
-                            };
+                        if (isExpired && reservation.reservationStatus === 'ENCOURS') {
+                            try {
+                                await deleteReservation(reservation.id); // Delete from the database
+                                console.log(`Expired reservation ID ${reservation.id} deleted.`);
+                                return null; // Exclude expired reservations from the list
+                            } catch (err) {
+                                console.error(
+                                    `Error deleting expired reservation ID: ${reservation.id}`,
+                                    err
+                                );
+                            }
+                        } else {
+                            try {
+                                const document = await documentService.getDocumentById(reservation.documentId);
+                                const user = await userService.getUserById(reservation.utilisateurId);
+
+                                return {
+                                    ...reservation,
+                                    titreDocument: document?.titre || "Titre non disponible",
+                                    code: user?.code || "Code non disponible",
+                                    nomPrenom: user ? `${user.nom} ${user.prenom}` : "Nom non disponible",
+                                };
+                            } catch (err) {
+                                console.error(
+                                    `Error fetching details for reservation ID: ${reservation.id}`,
+                                    err
+                                );
+                                return {
+                                    ...reservation,
+                                    titreDocument: "Titre non disponible",
+                                    code: "Code non disponible",
+                                    nomPrenom: "Nom non disponible",
+                                };
+                            }
                         }
                     })
                 );
-                setReservationsData(reservationsWithDetails);
+
+                // Filter out null entries (expired reservations)
+                const filteredReservations = reservationsWithDetails.filter(Boolean);
+                setReservationsData(filteredReservations);
             } catch (error) {
-                console.error('Erreur lors de la récupération des réservations:', error);
+                console.error('Error fetching reservations:', error);
             }
         };
 
@@ -95,12 +121,17 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
         }
     };
 
+    const calculateReturnDate = (startDate, daysToAdd) => {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + daysToAdd);
+        return date.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
+    };
+
     const handleStatutChange = async (id, newStatut, documentId) => {
         const updatedReservations = reservationsData.map(reservation =>
-            reservation.id === id ? {
-                ...reservation,
-                reservationStatus: newStatut
-            } : reservation
+            reservation.id === id
+                ? { ...reservation, reservationStatus: newStatut }
+                : reservation
         );
         setReservationsData(updatedReservations);
 
@@ -111,22 +142,24 @@ const GestionReservations = ({ onDeleteReservation, onAddReservation }) => {
                 utilisateurId: updatedReservation.utilisateurId,
                 documentId: updatedReservation.documentId,
                 dateReservation: updatedReservation.dateReservation,
-                reservationStatus: newStatut
+                reservationStatus: newStatut,
             });
 
             if (newStatut === 'ACCEPTED') {
                 const dateEmprunt = updatedReservation.dateReservation;
+                const dateRetour = calculateReturnDate(dateEmprunt, 3);
 
                 const emprunt = {
-                    dateEmprunt: dateEmprunt,
+                    dateEmprunt,
+                    dateRetour,
+                    documentTitle: updatedReservation.titreDocument,
                 };
 
                 await saveEmprunt(updatedReservation.utilisateurId, documentId, emprunt);
                 await documentService.updateDocumentAvailability(documentId, false);
-                console.log("Le livre a été mis à jour comme indisponible.");
             }
         } catch (error) {
-            console.error("Erreur lors de la mise à jour de la réservation :", error);
+            console.error("Error updating reservation:", error);
         }
     };
 

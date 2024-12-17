@@ -100,13 +100,18 @@ export async function deleteReservation(id) {
         });
 
         if (!response.ok) {
-            throw new Error('Erreur lors de la suppression de la réservation');
+            const errorText = await response.text();
+            console.error(`Erreur lors de la suppression de la réservation: ${errorText}`);
+            throw new Error(`Erreur lors de la suppression de la réservation: ${errorText}`);
         }
+
+        return response.json(); // Optionally return the response body
     } catch (error) {
         console.error('Erreur dans deleteReservation:', error);
         throw error;
     }
 }
+
 
 export async function getReservationsByUser(userId) {
     try {

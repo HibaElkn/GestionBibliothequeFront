@@ -22,29 +22,47 @@ export async function isEmpruntCountValid(utilisateurId) {
         throw error;
     }
 }
-
-// Sauvegarder un emprunt
 export async function saveEmprunt(utilisateurId, documentId, emprunt) {
     try {
+        // Construct the request body
+        const requestBody = {
+            dateEmprunt: emprunt.dateEmprunt,
+            dateRetour: emprunt.dateRetour,
+            document: {
+                id: documentId,
+                titre: emprunt.documentTitle || 'Untitled Document'
+            }
+        };
+
+        console.log('Sending Emprunt Request:', requestBody);
+
         const response = await fetch(`${API_URL}/save?utilisateurId=${utilisateurId}&documentId=${documentId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getToken()}`,
             },
-            body: JSON.stringify(emprunt),
+            body: JSON.stringify(requestBody),
         });
+        console.log('Sending Emprunt Request:', `${API_URL}/emprunts/save?utilisateurId=${utilisateurId}&documentId=${documentId}`);
+
 
         if (!response.ok) {
-            throw new Error('Erreur lors de la sauvegarde de l\'emprunt');
+            const errorDetails = await response.json();
+            console.error('Error Details:', errorDetails); // Log detailed error response
+            throw new Error(`Erreur lors de la sauvegarde de l'emprunt: ${errorDetails.message || 'Unknown error'}`);
         }
 
-        return await response.json(); // Retourne l'emprunt créé
+        const responseData = await response.json();
+        return responseData;
+
     } catch (error) {
         console.error('Erreur dans saveEmprunt:', error);
         throw error;
     }
 }
+
+
 
 // Supprimer un emprunt
 export async function deleteEmprunt(id) {
@@ -66,20 +84,25 @@ export async function deleteEmprunt(id) {
         throw error;
     }
 }
-
-// Mettre à jour un emprunt
 export async function updateEmprunt(id, updatedEmprunt) {
     try {
+        // Ensure that 'joursRetard' is not included in the updated data
+        const { joursRetard, ...empruntData } = updatedEmprunt; 
+
+        console.log('Updating emprunt with data:', empruntData); // Log the updated data without 'joursRetard'
+
         const response = await fetch(`${API_URL}/update/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${getToken()}`,
             },
-            body: JSON.stringify(updatedEmprunt),
+            body: JSON.stringify(empruntData),
         });
 
         if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Response error:', errorResponse); // Log the error response body
             throw new Error('Erreur lors de la mise à jour de l\'emprunt');
         }
 
@@ -215,27 +238,42 @@ export async function getEmpruntsRetournerSansRetard() {
         throw error;
     }
 }
-
-// Mettre à jour le statut d'un emprunt
-export async function updateStatut(id, nouveauStatut) {
+export async function updateStatut(id, statut) {
     try {
-        const response = await fetch(`${API_URL}/${id}/statut?nouveauStatut=${nouveauStatut}`, {
+        // Prepare the updatedEmprunt object with only the statut
+        const updatedEmprunt = {
+            statut: statut,  // Only update the statut
+        };
+
+        console.log('Sending PUT request to update emprunt with ID:', id);
+        console.log('Updated Emprunt data:', updatedEmprunt);
+
+        // Sending PUT request to update the emprunt with the provided ID and updated statut
+        const response = await fetch(`http://localhost:8080/api/emprunts/${id}/statut?nouveauStatut=${statut}`, {
             method: 'PUT',
             headers: {
-                Authorization: `Bearer ${getToken()}`,
+                'Authorization': `Bearer ${getToken()}`,  // Include token for authorization if needed
+                'Content-Type': 'application/json',  // Set content type to JSON
             },
+            // Send only the statut in the body if needed, otherwise rely on request params
+            // body: JSON.stringify(updatedEmprunt),
         });
 
         if (!response.ok) {
-            throw new Error('Erreur lors de la mise à jour du statut de l\'emprunt');
+            const errorDetail = await response.text();  // Get detailed error response
+            console.error('Error details from server:', errorDetail);
+            throw new Error(`Error updating status: ${errorDetail}`);
         }
 
-        return await response.json(); // Retourne l'emprunt mis à jour avec le nouveau statut
+        const result = await response.json();  // Parse the response to get the result
+        console.log('Successfully updated emprunt:', result);
+        return result;  // Return the updated emprunt data
     } catch (error) {
-        console.error('Erreur dans updateStatut:', error);
-        throw error;
+        console.error('Error in updateStatut function:', error);
+        throw error;  // Throw error if there's an issue with the request
     }
 }
+
 
 // Obtenir les emprunts par statut
 export async function getEmpruntsByStatut(statut) {
@@ -257,24 +295,43 @@ export async function getEmpruntsByStatut(statut) {
         throw error;
     }
 }
-
-// Obtenir tous les emprunts
 export async function getAllEmprunts() {
+    const API_URL = 'http://localhost:8080/api/emprunts'; // Your API URL
+
     try {
+        const token = getToken();
+        console.log('Using token:', token);
+        console.log('Calling API:', API_URL);
+
         const response = await fetch(API_URL, {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${getToken()}`,
+                Authorization: `Bearer ${token}`,
+                'Accept': 'application/json',
             },
         });
 
+        // Read the raw response as text
+        const responseText = await response.text();
+      //  console.log('Raw response:', responseText);  // Log raw response for inspection
+
         if (!response.ok) {
-            throw new Error('Erreur lors de la récupération de tous les emprunts');
+            console.error('Error from API:', responseText);
+            throw new Error(`API Error: ${response.status} - ${responseText}`);
         }
 
-        return await response.json(); // Retourne la liste de tous les emprunts
+        // Try parsing the response as JSON
+        try {
+            const data = JSON.parse(responseText);
+     //       console.log('Parsed data:', data);
+            return data;
+        } catch (jsonError) {
+     //       console.error('JSON parse error:', jsonError);
+       //     console.error('Response was:', responseText);
+            throw new Error('Failed to parse JSON response');
+        }
     } catch (error) {
-        console.error('Erreur dans getAllEmprunts:', error);
+        console.error('Error in getAllEmprunts:', error);
         throw error;
     }
 }

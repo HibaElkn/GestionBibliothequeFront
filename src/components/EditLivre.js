@@ -214,9 +214,15 @@ const EditLivre = () => {
         </div>
 
         <div className="form-group">
-          <label>Image:</label>
-          <input type="file" name="img" onChange={handleImageChange} />
-        </div>
+  <label>Image:</label>
+  <input 
+    type="file" 
+    name="img" 
+    accept=".png, .jpg, .jpeg" 
+    onChange={handleImageChange} 
+  />
+</div>
+
 
         <div className="button-container">
           <button type="submit" className="btn-success">Mettre à jour</button>
