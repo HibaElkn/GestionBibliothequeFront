@@ -311,27 +311,61 @@ export async function getAllEmprunts() {
             },
         });
 
-        // Read the raw response as text
-        const responseText = await response.text();
-      //  console.log('Raw response:', responseText);  // Log raw response for inspection
-
+        // Check if the response is ok (status in range 200-299)
         if (!response.ok) {
+            const responseText = await response.text(); // Read the response body
             console.error('Error from API:', responseText);
             throw new Error(`API Error: ${response.status} - ${responseText}`);
         }
 
+        // Log the raw response for inspection
+        const responseText = await response.text();
+        console.log('Raw response:', responseText); // Log the raw response
+
         // Try parsing the response as JSON
         try {
             const data = JSON.parse(responseText);
-     //       console.log('Parsed data:', data);
+            console.log('Parsed data:', data); // Log parsed data for inspection
             return data;
         } catch (jsonError) {
-     //       console.error('JSON parse error:', jsonError);
-       //     console.error('Response was:', responseText);
+            console.error('JSON parse error:', jsonError);
+            console.error('Response was:', responseText);
             throw new Error('Failed to parse JSON response');
         }
+
     } catch (error) {
         console.error('Error in getAllEmprunts:', error);
         throw error;
     }
 }
+
+
+// Define the fetch function
+export const fetchStatistiquesLivres = async () => {
+    const url = "http://localhost:8080/api/statistics/documents/documents_disponible";
+  
+    try {
+        const token = getToken();
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error fetching statistics: ${response.statusText}`);
+      }
+  
+      // Parse the JSON response
+      const data = await response.json();
+  
+      // Return the data
+      return data;
+    } catch (error) {
+      console.error("Error fetching statistiques livres:", error);
+      throw error;
+    }
+  };
+  

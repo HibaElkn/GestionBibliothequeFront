@@ -4,7 +4,8 @@ import { FaCalendarAlt, FaBook } from 'react-icons/fa';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import '../styles/Dashboard.css';
 import { getToken } from '../services/authService'; 
-import { getAllEmprunts, updateStatut } from '../services/empruntService';
+import { getAllEmprunts, updateStatut, fetchStatistiquesLivres } from '../services/empruntService';
+import { fetchTopDocuments ,fetchStatsByYear  } from '../services/documentService';
 
 // Register necessary components for Chart.js
 ChartJS.register(
@@ -21,12 +22,13 @@ ChartJS.register(
 const Dashboard = () => {
   const [livresEmpruntesCount, setLivresEmpruntesCount] = useState(0); // Books borrowed this month
   const [empruntsEnCours, setEmpruntsEnCours] = useState([]); // Current loans
-  const [topDocuments, setTopDocuments] = useState([]); // Top borrowed documents
-  const [documentStats, setDocumentStats] = useState({ borrowed: 0, available: 0 }); // Borrowed vs available
-  const [countCurrentMonth, setCountCurrentMonth] = useState(0);
+  const [topDocuments, setTopDocuments] = useState([]); // State to store top documents
+  const [availableBooks, setAvailableBooks] = useState(0); // Track the available books
+  const [countCurrentMonth, setCountCurrentMonth] = useState(0); // Track the count of returns this month
+  const [stats, setStats] = useState({}); // State to store statistics data for the year
 
   useEffect(() => {
-    const token = getToken();
+    const token = getToken(); // Assuming getToken() retrieves the authentication token
   
     if (!token) {
       console.error('Token is missing');
@@ -35,8 +37,8 @@ const Dashboard = () => {
   
     const fetchData = async () => {
       try {
+        // Fetch emprunts data
         const emprunts = await getAllEmprunts();
-    
         const empruntsRetourner = emprunts.filter((emprunt) => emprunt.statut === 'RETOURNER');
     
         const currentDate = new Date();
@@ -48,23 +50,21 @@ const Dashboard = () => {
           return dateEmprunt.getMonth() === currentMonth && dateEmprunt.getFullYear() === currentYear;
         }).length;
     
-        console.log(`Number of loans with status 'RETOURNER' in the current month: ${countCurrentMonth}`);
-    
-        // Set the value in state
         setCountCurrentMonth(countCurrentMonth);
-    
-        // Log the state value after setting it (since state updates are async)
-        console.log('State countCurrentMonth after setState:', countCurrentMonth);
     
         const empruntsEnAttente = emprunts.filter((emprunt) => emprunt.statut === 'ATTENTE');
         setEmpruntsEnCours(empruntsEnAttente);
-    
-        console.log('Filtered emprunts with statut = "ATTENTE":', empruntsEnAttente);
-    
+        // Fetch the stats for the current year
+        const statsData = await fetchStatsByYear(currentYear); // Fetch stats by year
+      console.log('Fetched Stats for the current year:', statsData); // Log stats to the console
+      setStats(statsData); // Store the stats in the state
+
+  
+        // Fetch data from APIs
         const endpoints = [
           'http://localhost:8080/api/emprunts/count-this-month',
           'http://localhost:8080/api/emprunts/emprunts/en-cours',
-          'http://localhost:8080/api/emprunts/documents/statistiques',
+          'http://localhost:8080/api/statistics/documents/documents_disponible',
         ];
     
         const responses = await Promise.all(
@@ -87,21 +87,47 @@ const Dashboard = () => {
         );
     
         setLivresEmpruntesCount(data[0] || 0);
-        
-        // Log `livresEmpruntesCount` after updating state
-        console.log(`Number of livres empruntés count: ${data[0]}`);
+        console.log('Fetching top documents...');
+        const topDocumentsData = await fetchTopDocuments(); // This fetches top documents
+        console.log('Fetched top documents:', topDocumentsData);  // Log fetched data
+        setTopDocuments(topDocumentsData.slice(0, 3)); // Store only the first 3 books
+
+        const statistiquesLivres = data[2]; // This should contain { nbDisponibles, nbEmpruntes }
+        console.log('Number of available books:', statistiquesLivres.nbDisponibles);
     
-        setDocumentStats(data[2] || { borrowed: 0, available: 0 });
-    
+        // Set available books count in state
+        setAvailableBooks(statistiquesLivres.nbDisponibles);
+  
+        // Set document stats
+        setDocumentStats({
+          borrowed: statistiquesLivres.nbEmpruntes,
+          available: statistiquesLivres.nbDisponibles,
+        });
+  
+        // Add console log here to check if the API call is working
+       
       } catch (error) {
         console.error('Error fetching data:', error.message);
       }
     };
-    
-    fetchData();
-    
-  }, []);
   
+    fetchData();
+  }, []); // Only fetch once when component mounts
+  
+  const doughnutData = {
+    labels: ['Livres empruntés', 'Livres disponibles'],
+    datasets: [
+      {
+        data: [
+          empruntsEnCours.filter((emprunt) => ['ATTENTE', 'RETARD'].includes(emprunt.statut)).length,  // Borrowed books
+          availableBooks,  // Available books
+        ],
+        backgroundColor: ['#FFA726', '#FFF3E0'],
+        hoverBackgroundColor: ['#FF9800', '#FFE0B2'],
+      }
+    ],
+  };
+
   const calculateAverageLateDuration = () => {
     const totalLateDuration = retoursData.reduce((acc, retour) => {
       const returnDate = new Date(retour.dateRetour);
@@ -112,44 +138,39 @@ const Dashboard = () => {
     }, 0);
     return retoursData.length ? (totalLateDuration / retoursData.length).toFixed(1) : 0; // Moyenne des jours de retard
   };
-// Doughnut chart data
-const doughnutData = {
-  labels: ['Livres empruntés', 'Livres disponibles'],
+
+ const months = [
+  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+];
+
+// Create arrays to store the "empruntés" and "retournés" values
+const empruntesData = months.map(month => stats[month]?.empruntés || 0);
+const retournesData = months.map(month => stats[month]?.retournés || 0);
+
+// Filter out the months that have no data (optional)
+const filteredMonths = months.filter((month, index) => empruntesData[index] !== 0 || retournesData[index] !== 0);
+
+// Update lineData to reflect the dynamic values
+const lineData = {
+  labels: filteredMonths,
   datasets: [
     {
-      data: [
-        empruntsEnCours.filter((emprunt) => ['ATTENTE', 'RETARD'].includes(emprunt.statut)).length,
-        empruntsEnCours.filter((emprunt) => emprunt.statut === 'RETOURNER').length
-      ],
-      backgroundColor: ['#FFA726', '#FFF3E0'],
-      hoverBackgroundColor: ['#FF9800', '#FFE0B2'],
-    }
+      label: 'Livres empruntés',
+      data: empruntesData.filter((_, index) => filteredMonths.includes(months[index])),
+      fill: true,
+      backgroundColor: 'rgba(30, 136, 229, 0.2)',
+      borderColor: '#1E88E5',
+      tension: 0.4,
+    },
+    {
+      label: 'Livres retournés',
+      data: retournesData.filter((_, index) => filteredMonths.includes(months[index])),
+      borderColor: '#FFC107',
+      backgroundColor: 'rgba(255, 193, 7, 0.2)',
+      tension: 0.4,
+    },
   ],
 };
-
-
-  // Example line chart data
-  const lineData = {
-    labels: ['Jan', 'Fév', 'Mar', 'Avr'], // Example months
-    datasets: [
-      {
-        label: 'Livres empruntés',
-        data: [150, 200, 180, 220], // Example data
-        fill: true,
-        backgroundColor: 'rgba(30, 136, 229, 0.2)',
-        borderColor: '#1E88E5',
-        tension: 0.4,
-      },
-      {
-        label: 'Livres retournés',
-        data: [120, 150, 170, 180], // Example data
-        borderColor: '#FFC107',
-        backgroundColor: 'rgba(255, 193, 7, 0.2)',
-        tension: 0.4,
-      },
-    ],
-  };
-
   return (
     <div className="dashboard">
       <div className="main" style={{ marginLeft: '250px' }}>
@@ -180,37 +201,37 @@ const doughnutData = {
           </div>
         </div>
 
-        
         {/* Second row with three cards */}
         <div className="stats-cards d-flex justify-content-between mt-4">
-          <div className="card shadow p-3">
-            <h5>Top Livres Empruntés</h5>
-            <ul>
-    {topDocuments.map((item, index) => (
-      <li key={index}>
-        {item.document?.titre} - {item.empruntCount} emprunts
-      </li>
-    ))}
+        <div className="card shadow p-3">
+  <h5>Top Livres Empruntés</h5>
+  <ul>
+    {topDocuments.length > 0 ? (
+      topDocuments.map((titre, index) => (
+        <li key={index}>
+          {titre}   </li>
+      ))
+    ) : (
+      <li>No top documents available</li>
+    )}
   </ul>
-          </div>
-          <div className="card shadow p-3">
-          <h5>Retours de livres</h5>
-<FaCalendarAlt className="icon" />
-<p>{countCurrentMonth} retours ce mois-ci</p>
+</div>
 
+          <div className="card shadow p-3">
+            <h5>Retours de livres</h5>
+            <FaCalendarAlt className="icon" />
+            <p>{countCurrentMonth} retours ce mois-ci</p>
           </div>
           <div className="card shadow p-3">
             <h5>Durée Moyenne des Retards</h5>
             <p>{calculateAverageLateDuration} jours</p>
-         
-        </div>
+          </div>
         </div>
 
-        
         {/* Chart section */}
-        <div className="charts mt-5">
-          <h5 className="mb-4">Graphique des Livres Empruntés vs Retournés</h5>
-          <Line data={lineData} />
+        <div className="line-chart mt-4">
+          <h5>Emprunts et Retours par Mois</h5>
+          <Line data={lineData} options={{ responsive: true }} />
         </div>
       </div>
     </div>

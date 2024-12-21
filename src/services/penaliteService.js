@@ -20,4 +20,33 @@ export const savePenalite = async (penaliteData) => {
     }
     
 };
+export const fetchPenalitesByUtilisateur = async (utilisateurId) => {
+    const API_URL = `http://localhost:8080/api/penalites/utilisateur/${utilisateurId}`;
 
+    try {
+        const token = getToken(); // Assuming you have a function to get the token
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/json',
+            },
+        });
+
+        const responseText = await response.text();
+        console.log('Raw Respons:', responseText);
+
+        // Try parsing JSON
+        try {
+            const penalites = JSON.parse(responseText);
+            console.log('Penalites:', penalites);
+            return penalites;
+        } catch (jsonError) {
+            console.error('JSON Parse Error:', jsonError);
+            throw new Error('Invalid JSON received from server');
+        }
+    } catch (error) {
+        console.error('Error in fetching penalites:', error);
+        throw error;
+    }
+};

@@ -5,37 +5,65 @@ import '../styles/UserBooks.css';
 import { getEmailFromToken } from '../services/authService';
 import { getUserByEmail } from '../services/userService';
 import { createReservation } from '../services/reservationService';
-import { isEmpruntCountValid } from '../services/empruntService';
+import { fetchPenalitesByUtilisateur } from '../services/penaliteService';
+import { getEmpruntsByUtilisateur } from '../services/empruntService.js';
 
 const defaultCoverImage = 'https://via.placeholder.com/150';
 
 const UserBooks = ({ booksData }) => {
     const [userId, setUserId] = useState(null);
-    const [isEligible, setIsEligible] = useState(false);
+    const [penalites, setPenalites] = useState([]); // Store penalites
+    const [emprunts, setEmprunts] = useState([]); // Store emprunts
+    const [canReserve, setCanReserve] = useState(true); // Track if the user can reserve
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
                 const email = getEmailFromToken();
                 console.log('Email extrait du token:', email);
-
+    
                 if (!email) {
                     console.error("Aucun email trouvé dans le token.");
                     return;
                 }
-                console.log('Données des livres:', booksData);
-
+    
                 const user = await getUserByEmail(email);
                 console.log('Utilisateur récupéré:', user);
-
+    
                 if (user) {
                     setUserId(user.id);
+    
+                    // Fetch emprunts for the user
+                    const empruntsData = await getEmpruntsByUtilisateur(user.id);
+                    console.log('Emprunts récupérés pour l\'utilisateur:', empruntsData); // Log emprunts data
+    
+                    // Check if any emprunt is "RETARD"
+                    const empruntsRetard = empruntsData.filter(emprunt => emprunt.statut === 'RETARD');
+                    console.log('Emprunts en retard:', empruntsRetard); // Log emprunts with status RETARD
+    
+                    setEmprunts(empruntsRetard); // Store emprunts with status RETARD
 
-                    // Vérifier l'éligibilité
-                    const eligible = await isEmpruntCountValid(user.id);
-                    console.log('Éligibilité pour emprunt (avant mise à jour):', eligible);
-                    setIsEligible(eligible);
-                    console.log('Éligibilité mise à jour dans le state:', eligible);
+                    // Fetch penalites for the user
+                    const penalitesData = await fetchPenalitesByUtilisateur(user.id);
+                    console.log('Pénalités récupérées:', penalitesData);
+                    setPenalites(penalitesData); // Store penalites
+                    
+                    // If user has any emprunt in RETARD or an active penalite, prevent reservations
+                    const hasRetard = empruntsRetard.length > 0;
+                    const hasActivePenalite = penalitesData.some(penalite => {
+                        const now = new Date();
+                        const dateFin = new Date(penalite.dateFin);
+                        return now < dateFin;
+                    });
+                    
+                    if (hasRetard) {
+                        console.log('L\'utilisateur a un emprunt en retard.');
+                    }
+                    if (hasActivePenalite) {
+                        console.log('L\'utilisateur a une pénalité active.');
+                    }
+
+                    setCanReserve(!hasRetard && !hasActivePenalite); // Disable reservation if either condition is true
                 } else {
                     console.error("Utilisateur non trouvé.");
                 }
@@ -43,7 +71,7 @@ const UserBooks = ({ booksData }) => {
                 console.error("Erreur lors de la récupération de l'utilisateur connecté:", error);
             }
         };
-
+    
         fetchUser();
     }, [booksData]);
 
@@ -56,7 +84,9 @@ const UserBooks = ({ booksData }) => {
                             key={book.id}
                             book={book}
                             userId={userId}
-                            isEligible={isEligible}
+                            penalites={penalites}
+                            emprunts={emprunts} // Pass emprunts to BookCard
+                            canReserve={canReserve} // Pass canReserve state to BookCard
                         />
                     ))
                 ) : (
@@ -67,7 +97,7 @@ const UserBooks = ({ booksData }) => {
     );
 };
 
-const BookCard = ({ book, userId, isEligible }) => {
+const BookCard = ({ book, userId, penalites, emprunts, canReserve }) => {
     const [showMore, setShowMore] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [borrowDate, setBorrowDate] = useState('');
@@ -119,7 +149,6 @@ const BookCard = ({ book, userId, isEligible }) => {
     };
 
     const getCoverImage = (imageBase64) => {
-        console.log('Image base64 reçue:', imageBase64);
         if (imageBase64) {
             if (imageBase64.startsWith('data:image')) {
                 return imageBase64;
@@ -144,7 +173,7 @@ const BookCard = ({ book, userId, isEligible }) => {
                         <strong>Auteur(s):</strong> {Array.isArray(book.auteurs) ? book.auteurs.join(', ') : book.auteurs}
                     </p>
                     <p className={`card-text ${book.statut === 'EXIST' ? 'text-success' : 'text-danger'}`}>
-                        <strong></strong> {book.statut === 'EXIST' ? 'Disponible' : 'Indisponible'}
+                        {book.statut === 'EXIST' ? 'Disponible' : 'Indisponible'}
                     </p>
                     {showMore && (
                         <>
@@ -155,17 +184,15 @@ const BookCard = ({ book, userId, isEligible }) => {
                     <div className="button-container mt-2">
                         <button
                             className="btn btn-see"
-                            onClick={() => {
-                                console.log('Voir plus / Voir moins cliqué.');
-                                setShowMore(!showMore);
-                            }}
+                            onClick={() => setShowMore(!showMore)}
                         >
                             {showMore ? 'Voir moins' : 'Voir plus'}
                         </button>
-                        {book.statut === 'EXIST' && isEligible && (
+                        {book.statut === 'EXIST' && canReserve && (
                             <button
                                 className="btn btn-success"
                                 onClick={handleBorrowClick}
+                                disabled={!canReserve}  // Disable if canReserve is false
                             >
                                 Réserver
                             </button>
@@ -174,12 +201,12 @@ const BookCard = ({ book, userId, isEligible }) => {
 
                     <Modal show={showModal} onHide={handleCloseModal}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Demande d'emprunt</Modal.Title>
+                            <Modal.Title>Réserver un livre</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             {showSuccess ? (
                                 <Alert variant="success" className="text-center">
-                                    <i className="bi bi-check-circle-fill"></i> Demande d'emprunt envoyée avec succès !
+                                    <i className="bi bi-check-circle-fill"></i> Veuillez passer à la bibliothèque pour emprunter le livre avant 24 heures.
                                 </Alert>
                             ) : (
                                 <Form onSubmit={handleSubmit}>
@@ -192,8 +219,8 @@ const BookCard = ({ book, userId, isEligible }) => {
                                             required
                                         />
                                     </Form.Group>
-                                    <Button variant="primary" type="submit" className="mt-3">
-                                        Envoyer la demande
+                                    <Button variant="primary" type="submit" className="mt-2">
+                                        Réserver
                                     </Button>
                                 </Form>
                             )}
@@ -204,5 +231,6 @@ const BookCard = ({ book, userId, isEligible }) => {
         </div>
     );
 };
+
 
 export default UserBooks;
