@@ -75,10 +75,10 @@ export const addAllUsers = async (type, utilisateurs, passwords) => {
 };
 
 // Fonction générique pour mettre à jour un utilisateur
-export const updateUser = async (type, id, updatedUserData) => {
+export const updateUser = async (id, updatedUserData) => {
     
     try {
-        const response = await fetch(`${API_BASE_URL}/${type}/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export const updateUser = async (type, id, updatedUserData) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Erreur lors de la mise à jour du ${type}`);
+            throw new Error(`Erreur lors de la mise à jour du`);
         }
 
         return await response.json();
