@@ -92,8 +92,8 @@ const TableLivres = ({ onEdit, onDelete, onDeleteSelected, onAddBooks }) => {
 
             alert("Document supprimé avec succès.");
         } catch (error) {
-            console.error("Error deleting document:", error);
-            alert("Erreur lors de la suppression du document.");
+            // console.error("Error deleting document:", error);
+            alert( "Vous ne pouvez pas supprimer ce document car il y a déjà des réservations ou des emprunts liés à ce document. Vous pouvez changer le nombre d exemplaires à 0.");
         }
     };
 
