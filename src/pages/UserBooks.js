@@ -180,9 +180,7 @@ const BookCard = ({ book, userId, penalites, emprunts, canReserve }) => {
                     <p className="card-text">
                         <strong>Auteur(s):</strong> {Array.isArray(book.auteurs) ? book.auteurs.join(', ') : book.auteurs}
                     </p>
-                    <p className={`card-text ${book.statut === 'EXIST' ? 'text-success' : 'text-danger'}`}>
-                        {book.statut === 'EXIST' ? 'Disponible' : 'Indisponible'}
-                    </p>
+                   
                     {showMore && (
                         <>
                             <p className="card-text"><strong>Sous-titres:</strong> {book.sousTitre}</p>
@@ -216,7 +214,7 @@ const BookCard = ({ book, userId, penalites, emprunts, canReserve }) => {
                         <Modal.Body>
                             {showSuccess ? (
                                 <Alert variant="success" className="text-center">
-                                    <i className="bi bi-check-circle-fill"></i> Veuillez passer à la bibliothèque pour emprunter le livre avant 24 heures.
+                                    <i className="bi bi-check-circle-fill"></i> Veuillez passer à la bibliothèque pour emprunter le livre avant 24 heures après la date de réservation.
                                 </Alert>
                             ) : (
                                 <Form onSubmit={handleSubmit}>
