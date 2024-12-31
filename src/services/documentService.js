@@ -340,7 +340,7 @@ export const fetchMoyenJoursRetard = async () => {
   
 export const fetchStatsByYear = async (year) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/statistics/stats/2024`, {
+      const response = await fetch(`http://localhost:8080/api/statistics/stats/2025`, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
         },
@@ -349,7 +349,7 @@ export const fetchStatsByYear = async (year) => {
       if (!response.ok) {
         if (response.status === 401) {
           console.error('Unauthorized access. Please log in again.');
-          // Optionally redirect to login page
+          // Optionally redirect to login page 
           // window.location.href = '/login';
         } else {
           throw new Error('Error fetching stats');
