@@ -84,33 +84,9 @@ const Header = () => {
     <div className="header">
       <img src={logo} alt="Logo" className="logo" />
 
-      <div className="notifications-container" onClick={toggleNotification}>
-        <i
-          className={`fas fa-bell notification-icon-outline ${hasNotification ? 'has-notification' : ''}`}
-        />
-        {hasNotification && <div className="notification-dot"></div>}
-      </div>
+ 
 
-      {showNotifications && (
-        <div className="notification-dropdown">
-          <h5>Notifications</h5>
-          {notifications.length === 0 ? (
-            <p>Aucune notification</p>
-          ) : (
-            <ul>
-              {notifications.map((notification) => (
-                <li key={notification.id}>
-                  <Link to={notification.url}>
-                    <p>{notification.message}</p>
-                  </Link>
-                  <span>{notification.time}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
+     
 <div className="profile-container" onClick={handleProfileClick}>
   {profileImage ? (
     <Link to="/profil">
