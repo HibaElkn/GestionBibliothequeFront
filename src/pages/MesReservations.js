@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import '../styles/Emprunts.css';
-import { getReservationsByUser, deleteReservation  } from '../services/reservationService';
+import { getReservationsByUser, deleteReservation } from '../services/reservationService';
 import documentService from '../services/documentService';
-
-
 import authService from '../services/authService';
 import userService from '../services/userService';
 
@@ -17,19 +15,19 @@ const MesResrvations = () => {
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
 
-    // Charger les données utilisateur pour récupérer l'ID
+    // Load user data to get the user ID
     const loadUserData = async () => {
         try {
             const emailFromToken = authService.getEmailFromToken();
             const user = await userService.getUserByEmail(emailFromToken);
             setUserId(user.id);
         } catch (err) {
-            setError("Impossible de récupérer les informations utilisateur.");
+            setError('Impossible de récupérer les informations utilisateur.');
             console.error(err);
         }
     };
 
-    // Charger les réservations et récupérer les titres des documents
+    // Load reservations and document titles
     useEffect(() => {
         const fetchReservations = async () => {
             if (!userId) return;
@@ -37,30 +35,31 @@ const MesResrvations = () => {
             setError(null);
             try {
                 const reservations = await getReservationsByUser(userId);
-    
-                // Filtrer uniquement les réservations avec le statut 'ENCOURS'
-                const filteredReservations = reservations.filter(reservation => reservation.reservationStatus === 'ENCOURS');
-    
-                // Pour chaque réservation, récupérer le titre du document
+
+                // Filter reservations with status 'ENCOURS'
+                const filteredReservations = reservations.filter(
+                    (reservation) => reservation.reservationStatus === 'ENCOURS'
+                );
+
+                // Fetch document titles for each reservation
                 const reservationsWithTitles = await Promise.all(
                     filteredReservations.map(async (reservation) => {
                         try {
                             const document = await documentService.getDocumentById(reservation.documentId);
-                            // Récupère le document
                             return {
                                 ...reservation,
-                                titreDocument: document.titre || "Titre non disponible", // Ajoute le titre du document
+                                titreDocument: document.titre || 'Titre non disponible', // Add document title
                             };
                         } catch (err) {
                             console.error(`Erreur lors de la récupération du titre pour le document ID: ${reservation.documentId}`, err);
                             return {
                                 ...reservation,
-                                titreDocument: "Titre non disponible", // Valeur par défaut en cas d'erreur
+                                titreDocument: 'Titre non disponible', // Default value in case of error
                             };
                         }
                     })
                 );
-    
+
                 setReservationsData(reservationsWithTitles);
             } catch (err) {
                 setError('Erreur lors du chargement des réservations. Veuillez réessayer.');
@@ -69,11 +68,11 @@ const MesResrvations = () => {
                 setLoading(false);
             }
         };
-    
+
         fetchReservations();
     }, [userId]);
-    
-    // Charger les données utilisateur au premier rendu
+
+    // Load user data on the first render
     useEffect(() => {
         loadUserData();
     }, []);
@@ -86,24 +85,17 @@ const MesResrvations = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleDeleteReservation = async (id) => {
-        if (window.confirm("Êtes-vous sûr de vouloir supprimer cette réservation ?")) {
-            try {
-                await deleteReservation(id);
-                setReservationsData((prevReservations) =>
-                    prevReservations.filter((reservation) => reservation.id !== id)
-                );
-                alert('Réservation supprimée avec succès.');
-            } catch (error) {
-                console.error('Erreur lors de la suppression de la réservation:', error);
-                alert('Une erreur est survenue lors de la suppression. Veuillez réessayer.');
-            }
+        try {
+            const response = await deleteReservation(id);
+            console.log("Delete Response:", response);
+            setReservationsData((prevReservations) =>
+                prevReservations.filter((reservation) => reservation.id !== id)
+            );
+        } catch (error) {
+            console.error('Erreur lors de la suppression de la réservation:', error);
         }
     };
     
-    
-    
-    
-
     const getStatutClass = (statut) => {
         switch (statut) {
             case 'ACCEPTED':
@@ -143,7 +135,7 @@ const MesResrvations = () => {
                                 <td>{reservation.titreDocument}</td>
                                 <td>{reservation.dateReservation}</td>
                                 <td>
-                                        <span className={`badge ${getStatutClass(reservation.reservationStatus)} rounded-3`}>
+                                    <span className={`badge ${getStatutClass(reservation.reservationStatus)} rounded-3`}>
                                         {reservation.reservationStatus}
                                     </span>
                                 </td>
