@@ -43,9 +43,9 @@ const GestionAdmin = () => {
                 prenom: user.prenom,
                 email: user.email,
                 code: user.code, // 'Numéro de SOM'
-                //role: "ADMIN"
+                role: user.role
             };
-            const updatedData = await userService.updateUser('admin', user.id, updatedUser); // Mise à jour basée sur l'email
+            const updatedData = await userService.updateUser( user.id, updatedUser); // Mise à jour basée sur l'email
             setUsers(prevUsers => 
                 prevUsers.map(u => u.email === user.email ? updatedData : u) // Mettre à jour l'utilisateur dans la liste
             );
