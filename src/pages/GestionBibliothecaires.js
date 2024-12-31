@@ -43,9 +43,9 @@ const GestionBibliothecaires = () => {
                 prenom: user.prenom,
                 email: user.email,
                 code: user.code, // 'Numéro de SOM'
-                //role: "BIBLIOTHECAIRE"
+                role: user.role
             };
-            const updatedData = await userService.updateUser('bibliothecaire', user.id, updatedUser); // Mise à jour basée sur l'email
+            const updatedData = await userService.updateUser(user.id, updatedUser); // Mise à jour basée sur l'email
             setUsers(prevUsers => 
                 prevUsers.map(u => u.email === user.email ? updatedData : u) // Mettre à jour l'utilisateur dans la liste
             );
