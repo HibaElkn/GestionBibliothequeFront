@@ -2,12 +2,14 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate} from 'react-router-dom';
 import GestionEtudiants from './pages/GestionEtudiants';
 import GestionPersonnel from './pages/GestionPersonnel';
+import GestionLivres from './pages/GestionLivres';
 import GestionAdmin from './pages/GestionAdmin';
 import GestionBibliothecaires from './pages/GestionBibliothecaires';
 import Login from './pages/LoginPage';
 import Navbar from './components/Navbar'; // Utilisation uniquement de Navbar
 import Header from './components/Header';
 import AjouterLivre from './components/AjouterLivre';
+import TableLivres from './components/TableLivres';
 import EditLivre from './components/EditLivre';
 import SupprimerLivre from './components/SupprimerLivre';
 import ParentComponent from './components/ParentComponent';
@@ -59,6 +61,9 @@ const AppContent = ({ handleDelete }) => {
           <Route path="/mes-emprunts" element={<MesEmprunts />} />
           <Route path="/ajouter-livre" element={<AjouterLivre onClose={() => {}} />} />
           <Route path="/modifier-livre/:id" element={<EditLivre />} />
+          <Route path="/gestion-livre" element={<GestionLivres />} />
+
+
           <Route
             path="/supprimer-livre/:id"
             element={<SupprimerLivre onConfirm={handleDelete} />}
