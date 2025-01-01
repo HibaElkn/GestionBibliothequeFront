@@ -148,16 +148,7 @@ const Dashboard = () => {
     ],
   };
 
-  const calculateAverageLateDuration = () => {
-    const totalLateDuration = retoursData.reduce((acc, retour) => {
-      const returnDate = new Date(retour.dateRetour);
-      const dueDate = new Date(retour.dateLimite);
-      const timeDifference = returnDate - dueDate; // Différence entre la date de retour et la date limite
-      const lateDays = Math.floor(timeDifference / (1000 * 3600 * 24));
-      return acc + (lateDays > 0 ? lateDays : 0); // Ne compte que les jours de retard (positifs)
-    }, 0);
-    return retoursData.length ? (totalLateDuration / retoursData.length).toFixed(1) : 0; // Moyenne des jours de retard
-  };
+
 
  const months = [
   'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
