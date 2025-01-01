@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:8080/auth"; // Remplacez par l'URL de votre backend si différent
+import API_BASE_URL from "../config/apiConfig";
+const API_URL = `${API_BASE_URL}/auth`; 
 
 export const login = async (email, password) => {
     try {

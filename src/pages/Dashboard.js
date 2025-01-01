@@ -7,6 +7,8 @@ import { getToken } from '../services/authService';
 import { getAllEmprunts, updateStatut, fetchStatistiquesLivres } from '../services/empruntService';
 import { fetchTopDocuments ,fetchStatsByYear  } from '../services/documentService';
 import { fetchAllPenalites } from '../services/penaliteService';
+import API_BASE_URL from "../config/apiConfig";
+
 // Register necessary components for Chart.js
 ChartJS.register(
   ArcElement,
@@ -65,9 +67,9 @@ const Dashboard = () => {
   
             // Fetch data from APIs
             const endpoints = [
-                'http://localhost:8080/api/emprunts/count-this-month',
-                'http://localhost:8080/api/emprunts/emprunts/en-cours',
-                'http://localhost:8080/api/statistics/documents/documents_disponible',
+                `${API_BASE_URL}/api/emprunts/count-this-month`,
+                `${API_BASE_URL}/api/emprunts/emprunts/en-cours`,
+                `${API_BASE_URL}/api/statistics/documents/documents_disponible`,
             ];
     
             const responses = await Promise.all(

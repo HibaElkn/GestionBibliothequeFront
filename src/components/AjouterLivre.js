@@ -38,7 +38,7 @@ const AjouterLivre = () => {
     
                 // Mettre à jour l'état avec l'image nettoyée
                 setLivre({ ...livre, img: imgBase64 });
-                console.log("Image Base64 nettoyée:", imgBase64);  // Log base64 data sans la partie 'data:image/...' 
+              //  console.log("Image Base64 nettoyée:", imgBase64);  // Log base64 data sans la partie 'data:image/...' 
             };
             reader.readAsDataURL(file);
         }
@@ -53,7 +53,7 @@ const AjouterLivre = () => {
             return;
         }
 
-        console.log("Image Base64 avant envoi:", livre.img);
+       // console.log("Image Base64 avant envoi:", livre.img);
 //if (!livre.img) {
    // setErreur("Veuillez ajouter une image.");
     //return;
@@ -77,7 +77,7 @@ const AjouterLivre = () => {
         };
 
         // Log the data being sent to ensure it's correctly formatted
-        console.log("Data being sent to backend:", livreAvecDescripteurs);
+       // console.log("Data being sent to backend:", livreAvecDescripteurs);
 
         try {
             // Send the formatted data to the backend

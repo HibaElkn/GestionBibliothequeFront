@@ -1,8 +1,10 @@
 // In penaliteService.js
 import axios from 'axios';
 import {  getToken } from "./authService";
+import API_BASE_URL from "../config/apiConfig";
 
-const BASE_URL = 'http://localhost:8080/api/penalites';  // Use port 8080 for backend API
+const BASE_URL = `${API_BASE_URL}/api/penalites`;  // Use port 8080 for backend API
+
 export const savePenalite = async (penaliteData) => {
     console.log("Sending data to Penalite:", penaliteData);
     try {
@@ -21,7 +23,7 @@ export const savePenalite = async (penaliteData) => {
     
 };
 export const fetchPenalitesByUtilisateur = async (utilisateurId) => {
-    const API_URL = `http://localhost:8080/api/penalites/utilisateur/${utilisateurId}`;
+    const API_URL = `${API_BASE_URL}/api/penalites/utilisateur/${utilisateurId}`;
 
     try {
         const token = getToken(); // Assuming you have a function to get the token
@@ -51,7 +53,7 @@ export const fetchPenalitesByUtilisateur = async (utilisateurId) => {
     }
 };
 export const fetchAllPenalites = async (token) => {
-    const API_URL = 'http://localhost:8080/api/penalites'; // Replace with your actual backend URL
+    const API_URL = `${API_BASE_URL}/api/penalites`; // Replace with your actual backend URL
 
     try {
         const token = getToken(); // Assuming you have a function to get the token

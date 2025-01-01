@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
+import API_BASE_URL from "../config/apiConfig";
 
 const useWebSocket = () => {
   useEffect(() => {
@@ -12,7 +13,7 @@ const useWebSocket = () => {
       return;
     }
 
-    const socket = new SockJS('http://localhost:8080/ws');
+    const socket = new SockJS(`${API_BASE_URL}/ws`);
     const stompClient = Stomp.over(socket);
 
     // Add the token to the headers

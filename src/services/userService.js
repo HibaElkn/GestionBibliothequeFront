@@ -1,6 +1,8 @@
 import { isAdminScope, getToken } from "./authService";
+import API_BASE_URL from "../config/apiConfig";
 
-const API_BASE_URL = 'http://localhost:8080/api/utilisateur';
+
+const API_URL = `${API_BASE_URL}/api/utilisateur`;
 
 // Fonction générique pour récupérer les utilisateurs
 export const getUsers = async (type) => {
@@ -9,7 +11,7 @@ export const getUsers = async (type) => {
         return [];
     }
     try {
-        const response = await fetch(`${API_BASE_URL}/${type}`, {
+        const response = await fetch(`${API_URL}/${type}`, {
             headers: {
                 Authorization: `Bearer ${getToken()}`
             }
@@ -30,7 +32,7 @@ export const addUser = async (type, utilisateur, password) => {
         throw new Error("Accès refusé : Seul un administrateur peut ajouter des utilisateurs.");
     }
     try {
-        const response = await fetch(`${API_BASE_URL}/${type}`, {
+        const response = await fetch(`${API_URL}/${type}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -57,7 +59,7 @@ export const addAllUsers = async (type, utilisateurs, passwords) => {
         throw new Error("Accès refusé : Seul un administrateur peut importer des utilisateurs.");
     }
     try {
-        const response = await fetch(`${API_BASE_URL}/save/list/${type}`, {
+        const response = await fetch(`${API_URL}/save/list/${type}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -78,7 +80,7 @@ export const addAllUsers = async (type, utilisateurs, passwords) => {
 export const updateUser = async (id, updatedUserData) => {
     
     try {
-        const response = await fetch(`${API_BASE_URL}/${id}`, {
+        const response = await fetch(`${API_URL}/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -104,7 +106,7 @@ export const deleteUser = async (type, id) => {
         throw new Error("Accès refusé : Seul un administrateur peut supprimer un utilisateur.");
     }
     try {
-        const response = await fetch(`${API_BASE_URL}/${type}/${id}`, {
+        const response = await fetch(`${API_URL}/${type}/${id}`, {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${getToken()}`,
@@ -124,7 +126,7 @@ export const deleteAllUsers = async (type, ids) => {
         throw new Error("Accès refusé : Seul un administrateur peut supprimer des utilisateurs.");
     }
     try {
-        const response = await fetch(`${API_BASE_URL}/${type}/list`, {
+        const response = await fetch(`${API_URL}/${type}/list`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -144,7 +146,7 @@ export const getUserByEmail = async (email) => {
     //non seulement pour les admin mais cette partie est pour tous les utilisateur de la bibliotheque la fonction 
     //est pour recuperer les info dans le profil
     try {
-        const response = await fetch(`${API_BASE_URL}/email/${email}`, {
+        const response = await fetch(`${API_URL}/email/${email}`, {
             headers: {
                 Authorization: `Bearer ${getToken()}`
             }
@@ -163,7 +165,7 @@ export const getUserByEmail = async (email) => {
 // Fonction pour changer le mot de passe d'un utilisateur
 export const changeUserPassword = async (id, newPassword) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/password/${id}`, {
+        const response = await fetch(`${API_URL}/password/${id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${getToken()}`,
@@ -185,7 +187,7 @@ export const changeUserPassword = async (id, newPassword) => {
 // Fonction pour récupérer la photo d'un utilisateur par son ID
 export const getPhotoByUserId = async (id) => {
     try {
-        const response = await fetch(`http://localhost:8080/api/photos/user/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/photos/user/${id}`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`, // Ajouter le token
             },
@@ -212,7 +214,7 @@ export const savePhotoToUser = async (userId, file) => {
     formData.append('file', file);
 
     try {
-        const response = await fetch(`http://localhost:8080/api/photos/users/${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/photos/users/${userId}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`, // Ajouter le token
@@ -240,7 +242,7 @@ export const getUserById = async (id) => {
     //non seulement pour les admin mais cette partie est pour tous les utilisateur de la bibliotheque la fonction 
     //est pour recuperer les info dans le profil
     try {
-        const response = await fetch(`${API_BASE_URL}/id/${id}`, {
+        const response = await fetch(`${API_URL}/id/${id}`, {
             headers: {
                 Authorization: `Bearer ${getToken()}`
             }

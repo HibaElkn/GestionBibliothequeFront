@@ -1,6 +1,6 @@
 import { isBibliothecaire, getToken } from "./authService"; // Importer les fonctions du authService
-
-const API_URL = 'http://localhost:8080/documents';
+import API_BASE_URL from "../config/apiConfig";
+const API_URL = `${API_BASE_URL}/documents`;
 
 const defaultHeaders = {
     'Content-Type': 'application/json',
@@ -268,7 +268,7 @@ export const fetchTopDocuments = async () => {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/statistics/documents/top-documents', {
+        const response = await fetch(`${API_BASE_URL}/api/statistics/documents/top-documents`, {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -314,7 +314,7 @@ export const fetchMoyenJoursRetard = async () => {
     }
   
     try {
-      const response = await fetch('http://localhost:8080/api/statistics/emprunts/mpoyen_retard', {
+      const response = await fetch(`${API_BASE_URL}/api/statistics/emprunts/mpoyen_retard`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -340,7 +340,7 @@ export const fetchMoyenJoursRetard = async () => {
   
 export const fetchStatsByYear = async (year) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/statistics/stats/2025`, {
+      const response = await fetch(`${API_BASE_URL}/api/statistics/stats/2025`, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
         },

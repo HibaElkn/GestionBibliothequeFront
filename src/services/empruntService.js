@@ -1,6 +1,7 @@
 import { getToken } from "./authService";
+import API_BASE_URL from "../config/apiConfig";
+const API_URL = `${API_BASE_URL}/api/emprunts`;
 
-const API_URL = 'http://localhost:8080/api/emprunts';
 
 // Vérifier si le nombre d'emprunts d'un utilisateur est valide
 export async function isEmpruntCountValid(utilisateurId) {
@@ -249,7 +250,7 @@ export async function updateStatut(id, statut) {
         console.log('Updated Emprunt data:', updatedEmprunt);
 
         // Sending PUT request to update the emprunt with the provided ID and updated statut
-        const response = await fetch(`http://localhost:8080/api/emprunts/${id}/statut?nouveauStatut=${statut}`, {
+        const response = await fetch(`${API_URL}/${id}/statut?nouveauStatut=${statut}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${getToken()}`,  // Include token for authorization if needed
@@ -296,8 +297,7 @@ export async function getEmpruntsByStatut(statut) {
     }
 }
 export async function getAllEmprunts() {
-    const API_URL = 'http://localhost:8080/api/emprunts'; // Your API URL
-
+    
     try {
         const token = getToken();
         console.log('Using token:', token);
@@ -342,7 +342,7 @@ export async function getAllEmprunts() {
 
 // Define the fetch function
 export const fetchStatistiquesLivres = async () => {
-    const url = "http://localhost:8080/api/statistics/documents/documents_disponible";
+    const url = `${API_BASE_URL}/api/statistics/documents/documents_disponible`;
   
     try {
         const token = getToken();
