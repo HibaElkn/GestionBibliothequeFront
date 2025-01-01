@@ -77,12 +77,12 @@ const handleSearchSubmit = (event) => {
 
     const validateEditForm = () => {
         let formErrors = {};
-        const emailRegex = /^[^\s@]+@uhp\.ac\.ma$/; // Valide uniquement les emails du domaine uph.ac.ma
+        const emailRegex = /^[^\s@]+@uhp\.ac\.ma$/; // Valide uniquement les emails du domaine uhp.ac.ma
     
         if (!editUser.email) {
             formErrors.email = 'Ce champ est requis';
         } else if (!emailRegex.test(editUser.email)) {
-            formErrors.email = "L'email doit être au format 'xxx@uph.ac.ma'";
+            formErrors.email = "L'email doit être au format 'xxx@uhp.ac.ma'";
         }
         if (!editUser.role) {
             formErrors.role = 'Veuillez sélectionner un rôle';
@@ -96,7 +96,7 @@ const handleSearchSubmit = (event) => {
     
     const validateForm = () => {
         let formErrors = {};
-        const emailRegex = /^[^\s@]+@uhp\.ac\.ma$/; // Valide uniquement les emails du domaine uph.ac.ma
+        const emailRegex = /^[^\s@]+@uhp\.ac\.ma$/; // Valide uniquement les emails du domaine uhp.ac.ma
     
         if (!newUser.code) formErrors.code = 'Ce champ est requis';
         if (!newUser.prenom) formErrors.prenom = 'Ce champ est requis';
@@ -104,7 +104,7 @@ const handleSearchSubmit = (event) => {
         if (!newUser.email) {
             formErrors.email = 'Ce champ est requis';
         } else if (!emailRegex.test(newUser.email)) {
-            formErrors.email = "L'email doit être au format 'xxx@uph.ac.ma'";
+            formErrors.email = "L'email doit être au format 'xxx@uhp.ac.ma'";
         }
         setErrors(formErrors);
         return Object.keys(formErrors).length === 0;
