@@ -19,22 +19,22 @@ const GestionEtudiants = () => {
         fetchUsers();
     }, []);
 
-    const handleAddUser = async (newUser) => {
-        try {
-            const etudiant = {
-                nom: newUser.nom,
-                prenom: newUser.prenom,
-                email: newUser.email,
-                codeMassar: newUser.code,
-                //role: "ETUDIANT"
-            };
-            await userService.addUser( etudiant, "123456");
-            const data = await userService.getUsers('etudiant'); // Actualise la liste des étudiants
-            setUsers(data);
-        } catch (error) {
-            console.error("Erreur lors de l'ajout de l'utilisateur :", error);
-        }
-    };
+       const handleAddUser = async (newUser) => {
+            try {
+                const etudiant = {
+                    nom: newUser.nom,
+                    prenom: newUser.prenom,
+                    email: newUser.email,
+                    codeMassar: newUser.code, // Utilisation du 'Numéro de SOM'
+                    //role: "etudiant"
+                };
+                await userService.addUser('etudiant', etudiant, "123456"); // Ajout d'un administrateur
+                const data = await userService.getUsers('etudiant'); // Récupère la liste mise à jour des administrateurs
+                setUsers(data);
+            } catch (error) {
+                console.error("Erreur lors de l'ajout de l'etudiant :", error);
+            }
+        };
 
     const handleEditUser = async (user) => {
         try {
